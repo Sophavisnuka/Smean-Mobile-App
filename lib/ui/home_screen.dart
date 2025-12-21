@@ -7,11 +7,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Image.asset(
-          '../assets/Smean-Logo.png',
-          width: 150,
-          height: 150,
-        ),
+        child: Text('gay'),
       ),
     );
   }

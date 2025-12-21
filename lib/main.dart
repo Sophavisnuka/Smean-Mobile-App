@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
-import './ui/home_screen.dart';
+import 'package:smean_mobile_app/theme/app_colors.dart';
+import 'ui/welcome_screen.dart';
 
 void main() {
   runApp(
@@ -18,7 +19,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen()
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: AppColors.backgroundColor,
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppColors.backgroundColor,
+          foregroundColor: AppColors.textColorWhite,
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: AppColors.primaryColor,
+          foregroundColor: Colors.white
+        )
+      ),
+      home: WelcomeScreen()
     );
   }
 }
