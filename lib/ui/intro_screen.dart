@@ -1,52 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/home_screen.dart';
+import 'package:smean_mobile_app/widgets/language_switcher_button.dart';
 
 class IntroScreen extends StatelessWidget {
   const IntroScreen({super.key});
 
-  List<PageViewModel> get listPagesViewModel => [
+  List<PageViewModel> _getListPagesViewModel(bool isKhmer) => [
     PageViewModel(
-      title: "Welcome",
-      body: "Welcome to SMEAN Mobile App",
+      title: isKhmer ? "ស្វាគមន៍" : "Welcome",
+      body: isKhmer ? "សូមស្វាគមន៍មកកាន់កម្មវិធី SMEAN Mobile App" : "Welcome to SMEAN Mobile App",
       image: const Center(child: Icon(Icons.record_voice_over, size: 100.0)),
     ),
     PageViewModel(
-      title: "Features_01",
-      body: "SMEAN Convert Your Khmer Speech to Text Within Seconds.",
+      title: isKhmer ? "លក្ខណៈពិសេស_01" : "Features_01",
+      body: isKhmer ? "SMEAN បម្លែងសំឡេងខ្មែររបស់អ្នកទៅជាអត្ថបទក្នុងរយៈពេលវេលាខ្លី។" : "SMEAN Convert Your Khmer Speech to Text Within Seconds.",
       image: const Center(child: Icon(Icons.text_fields_outlined, size: 100.0)),
     ),
     PageViewModel(
-      title: "Features_02",
-      body:
-          "Generate an insighful Summarization of your the generated transcription.",
+      title: isKhmer ? "លក្ខណៈពិសេស_02" : "Features_02",
+      body: isKhmer
+        ? "បង្កើតសេចក្តីសង្ខេបដែលមានអត្ថន័យពីការបកប្រែដែលបានបង្កើត។"
+        : "Generate an insightful Summarization of your the generated transcription.",
       image: const Center(child: Icon(Icons.summarize, size: 100.0)),
     ),
     PageViewModel(
-      title: "Features_03",
-      body:
-          "Provided a Live Transcription feature to generate you voice Instantly.",
+      title: isKhmer ? "លក្ខណៈពិសេស_03" : "Features_03",
+      body: isKhmer
+        ? "ផ្តល់ជូនមុខងារ Live Transcription ដើម្បីបង្កើតសំឡេងរបស់អ្នកភ្លាមៗ។"
+        : "Provided a Live Transcription feature to generate you voice Instantly.",
       image: const Center(child: Icon(Icons.voice_chat, size: 100.0)),
     ),
     PageViewModel(
-      title: "Get Started",
-      body: "Begin your wonderful journey with SMEAN!",
+      title: isKhmer ? "ចាប់ផ្តើម" : "Get Started",
+      body: isKhmer ? "ចាប់ផ្តើមដំណើរដ៏អស្ចារ្យរបស់អ្នកជាមួយ SMEAN!" : "Begin your wonderful journey with SMEAN!",
       image: const Center(child: Icon(Icons.rocket_launch, size: 100.0)),
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: LanguageSwitcherButton()
+          ),
+        ],
+      ),
       body: IntroductionScreen(
-        pages: listPagesViewModel,
+        pages: _getListPagesViewModel(isKhmer),
         showNextButton: true,
         showSkipButton: true,
         freeze: false,
         allowImplicitScrolling: true,
         next: const Icon(Icons.arrow_forward),
-        skip: const Text("Skip", style: TextStyle(fontWeight: FontWeight.w700)),
-        done: const Text("Done", style: TextStyle(fontWeight: FontWeight.w700)),
+        skip: Text(isKhmer ? "រំលង" : "Skip", style: const TextStyle(fontWeight: FontWeight.w700)),
+        done: Text(isKhmer ? "បញ្ចប់" : "Done", style: const TextStyle(fontWeight: FontWeight.w700)),
         onDone: () {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -58,7 +73,9 @@ class IntroScreen extends StatelessWidget {
           );
         },
         baseBtnStyle: TextButton.styleFrom(
-          shape: const CircleBorder(),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(100.0)),
+          ),
           fixedSize: const Size(60.0, 60.0),
           backgroundColor: const Color(0xFF1194b4),
         ),
