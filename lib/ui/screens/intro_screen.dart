@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/ui/home_screen.dart';
-import 'package:smean_mobile_app/widgets/language_switcher_button.dart';
+import 'package:smean_mobile_app/ui/screens/home_screen.dart';
+import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
 class IntroScreen extends StatelessWidget {
   const IntroScreen({super.key});

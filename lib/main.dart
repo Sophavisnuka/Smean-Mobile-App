@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'ui/welcome_screen.dart';
+import 'package:smean_mobile_app/ui/screens/main_screen.dart';
 
 void main() {
   runApp(
@@ -57,7 +57,7 @@ class SmeanApp extends StatelessWidget {
         // 2. Set Default Font (Poppins for English, Kantumruy Pro for Khmer)
         textTheme: currentTextTheme,
       ),
-      home: WelcomeScreen(),
+      home: MainScreen(),
     );
   }
 }
