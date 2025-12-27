@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/widgets/language_switcher_button.dart';
+import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class AccountScreen extends StatelessWidget {
+  
+  const AccountScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +13,7 @@ class HomeScreen extends StatelessWidget {
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isKhmer ? 'ស្មៀន Mobile App' : 'SMEAN Mobile App',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
+        title: Text(isKhmer ? 'គណនី' : 'Account'),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),
@@ -24,10 +22,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Text(
-          isKhmer ? 'ខ្មែរធ្វើបាន!' : 'Khmer Can Do It!',
-          style: const TextStyle(fontSize: 24),
-        ),
+        child: Text(isKhmer ? 'គណនី' : 'Account'),
       ),
     );
   }

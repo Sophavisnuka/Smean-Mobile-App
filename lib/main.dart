@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/ui/main_screen.dart';
+import 'package:smean_mobile_app/ui/screens/main_screen.dart';
 
 void main() {
   runApp(

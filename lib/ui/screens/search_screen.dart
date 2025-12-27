@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/widgets/language_switcher_button.dart';
+import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
-class RecordScreen extends StatelessWidget {
+class SearchScreen extends StatelessWidget {
   
-  const RecordScreen({super.key});
+  const SearchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class RecordScreen extends StatelessWidget {
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     return Scaffold(
       appBar: AppBar(
-        title: Text(isKhmer ? 'កំណត់ត្រា' : 'Record'),
+        title: Text(isKhmer ? 'ស្វែងរក' : 'Search'),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),
@@ -22,7 +22,7 @@ class RecordScreen extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Text(isKhmer ? 'កំណត់ត្រា' : 'Record Screen'),
+        child: Text(isKhmer ? 'ស្វែងរក' : 'Search Screen'),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/language_provider.dart';
+import '../../providers/language_provider.dart';
 
 class LanguageSwitcherButton extends StatelessWidget {
   const LanguageSwitcherButton({super.key});
@@ -20,7 +20,7 @@ class LanguageSwitcherButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.2), // Glass effect
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.white, width: 1),
         ),
         child: Row(
