@@ -3,6 +3,7 @@ import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/ui/screens/home_screen.dart';
 import 'package:smean_mobile_app/ui/screens/recording_screen.dart';
 import 'package:smean_mobile_app/ui/screens/search_screen.dart';
+import 'package:smean_mobile_app/ui/screens/account_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -11,7 +12,7 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-enum ScreenTab{homeScreen, searchScreen, recordScreen,}
+enum ScreenTab{homeScreen, searchScreen, recordScreen, accountScreen}
 
 class _MainScreenState extends State<MainScreen> {
 
@@ -24,13 +25,15 @@ class _MainScreenState extends State<MainScreen> {
         index: currentIndex,
         children: [
           HomeScreen(),
-          RecordScreen(),
           SearchScreen(),
+          RecordScreen(),
+          AccountScreen()
         ],
-
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: AppColors.primary,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
         onTap: (index) {
           setState(() {
@@ -43,12 +46,16 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home'
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search'
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.mic),
             label: 'Record'
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search'
+            icon: Icon(Icons.people),
+            label: 'Account'
           ),
         ]
       ),

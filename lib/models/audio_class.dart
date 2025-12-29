@@ -1,20 +1,31 @@
 class AudioRecord {
-
   final String audioId;
   final String filePath;
   final String audioTitle;
-  final String duration;
-  final String format;
   final DateTime createdAt;
-  final DateTime updatedAt;
 
-  const AudioRecord ({
+  AudioRecord({
     required this.audioId,
     required this.filePath,
     required this.audioTitle,
-    required this.duration,
-    required this.format,
     required this.createdAt,
-    required this.updatedAt,
   });
+
+  factory AudioRecord.fromJson(Map<String, dynamic> json) {
+    return AudioRecord(
+      audioId: json['audioId'] as String,
+      filePath: json['filePath'] as String,
+      audioTitle: json['audioTitle'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'audioId': audioId,
+      'audioTitle': audioTitle,
+      'filePath': filePath,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
 }
