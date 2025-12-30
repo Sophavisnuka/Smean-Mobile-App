@@ -33,7 +33,7 @@ class AccountScreen extends StatelessWidget {
             // ),
             ClipOval(
               child: Image.asset(
-                '../../assets/Elite.png',
+                'assets/images/Elite.png',
                 width: 100,
                 height: 100,
                 fit: BoxFit.cover,
