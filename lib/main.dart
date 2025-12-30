@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/screens/main_screen.dart';
+import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
+import 'package:smean_mobile_app/ui/screens/register_login_screen/register_screen.dart';
+import 'package:smean_mobile_app/ui/screens/welcome_screen/welcome_screen.dart';
 
 void main() {
   runApp(
@@ -14,7 +17,8 @@ void main() {
           create: (context) => LanguageProvider(),
         ),
       ],
-      child: DevicePreview(builder: (context) => SmeanApp()),
+      // child: DevicePreview(builder: (context) => SmeanApp()),
+      child: SmeanApp(),
     ),
   );
 }
@@ -34,6 +38,13 @@ class SmeanApp extends StatelessWidget {
     //   return const LoginScreen();
     // }
     return MaterialApp(
+      initialRoute: '/splash',
+      routes: {
+        '/splash': (context) => const WelcomeScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/main': (context) => const MainScreen(),
+      },
       title: "SMEAN",
       debugShowCheckedModeBanner: false,
       locale: languageProvider.currentLocale,
@@ -63,7 +74,7 @@ class SmeanApp extends StatelessWidget {
         // 2. Set Default Font (Poppins for English, Kantumruy Pro for Khmer)
         textTheme: currentTextTheme,
       ),
-      home: MainScreen(),
+      home: WelcomeScreen(),
     );
   }
 }

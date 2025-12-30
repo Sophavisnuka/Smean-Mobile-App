@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/ui/screens/home_screen.dart';
+import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
 class IntroScreen extends StatelessWidget {
@@ -64,12 +64,12 @@ class IntroScreen extends StatelessWidget {
         done: Text(isKhmer ? "បញ្ចប់" : "Done", style: const TextStyle(fontWeight: FontWeight.w700)),
         onDone: () {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => HomeScreen()),
+            MaterialPageRoute(builder: (context) => LoginScreen()),
           );
         },
         onSkip: () {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => HomeScreen()),
+            MaterialPageRoute(builder: (context) => LoginScreen()),
           );
         },
         baseBtnStyle: TextButton.styleFrom(
