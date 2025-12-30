@@ -125,6 +125,7 @@ class _HomeScreenState extends State<HomeScreen>{
     return Scaffold(
       appBar: AppBar(
         title: Image.asset('assets/images/Smean-Logo.png', height: 50),
+        centerTitle: false,
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),

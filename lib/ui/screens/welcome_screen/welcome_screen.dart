@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:smean_mobile_app/ui/screens/intro_screen.dart';
+import 'intro_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -29,11 +29,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset('../assets/SMEAN_logo.json'),
+            Lottie.asset('assets/images/SMEAN_logo.json'),
             SizedBox(height: 20),
-            Lottie.asset('../assets/SMEAN_text.json'),
+            Lottie.asset('assets/images/SMEAN_text.json'),
             SizedBox(height: 20),
-            Lottie.asset('../assets/SMEAN_description.json'),
+            Lottie.asset('assets/images/SMEAN_description.json'),
             SizedBox(height: 20),
           ],
         ),

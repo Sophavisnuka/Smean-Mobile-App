@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smean_mobile_app/ui/screens/home_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -46,23 +47,26 @@ class LoginScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/main');
+                    },
                     child: const Text('Login'),
                   ),
                 ),
 
                 const SizedBox(height: 12),
-
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RegisterScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text("Don't have an account? Register"),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Don't have an account? "),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/register');
+                      },
+                      child: const Text("Register"),
+                    ),
+                  ],
                 ),
               ],
             ),
