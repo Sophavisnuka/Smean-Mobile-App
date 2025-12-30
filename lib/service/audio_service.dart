@@ -5,4 +5,7 @@ class AudioService {
   Future<List<AudioRecord>> loadAudios() async {
     return await AudioRepository.getAudios();
   }
+  Future<void> saveAudios(List<AudioRecord> audios) async {
+    return await AudioRepository.saveAudios(audios);
+  }
 }
