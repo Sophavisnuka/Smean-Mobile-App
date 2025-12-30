@@ -16,6 +16,7 @@ enum ScreenTab{homeScreen, searchScreen, recordScreen, accountScreen}
 
 class _MainScreenState extends State<MainScreen> {
 
+  final GlobalKey<SearchScreenState> _searchKey = GlobalKey<SearchScreenState>();
   int currentIndex = 0;
 
   @override
@@ -25,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
         index: currentIndex,
         children: [
           HomeScreen(),
-          SearchScreen(),
+          SearchScreen(key: _searchKey),
           RecordScreen(),
           AccountScreen()
         ],
@@ -38,6 +39,9 @@ class _MainScreenState extends State<MainScreen> {
         onTap: (index) {
           setState(() {
             currentIndex = index;
+            if (index == 1) {
+              _searchKey.currentState?.reloadAudios();
+            }
           });
         },
         items: [

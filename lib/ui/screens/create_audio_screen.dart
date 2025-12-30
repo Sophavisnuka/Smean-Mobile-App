@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
+import 'package:uuid/uuid.dart';
+import 'package:smean_mobile_app/models/audio_class.dart';
 
 class CreateAudioScreen extends StatefulWidget {
   const CreateAudioScreen({super.key});
@@ -11,40 +10,58 @@ class CreateAudioScreen extends StatefulWidget {
 }
 
 class _CreateAudioScreenState extends State<CreateAudioScreen> {
-  final _titleController = TextEditingController();
-  
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    // _titleController.text = TextEditingController();
+  final _titleCtrl = TextEditingController();
+  bool _saving = false;
+
+  void _save() {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) return;
+
+    setState(() => _saving = true);
+
+    final record = AudioRecord(
+      audioId: const Uuid().v4(),
+      audioTitle: title,
+      createdAt: DateTime.now(), // adjust if your model uses DateTime
+      filePath: '', // empty for now (no recording yet)
+    );
+
+    Navigator.pop(context, record);
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    _titleCtrl.dispose();
     super.dispose();
-    _titleController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
-    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Create Audio'),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: LanguageSwitcherButton(),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Create Audio')),
       body: Padding(
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          
+          children: [
+            TextField(
+              controller: _titleCtrl,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'Audio title',
+                hintText: 'Enter title',
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (_) => _save(),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saving ? null : _save,
+                child: const Text('Create'),
+              ),
+            ),
+          ],
         ),
       ),
     );

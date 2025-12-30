@@ -1,26 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/providers/audio_provider.dart';
+import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
+import 'package:smean_mobile_app/service/audio_service.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  State<SearchScreen> createState() => SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
-  String searchText = '';
+class SearchScreenState extends State<SearchScreen> {
+  String searchText = ''; 
+  List<AudioRecord> _audios = [];
+  final AudioService _audioService = AudioService();
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    reloadAudios(); // initial load
+  }
+
+  Future<void> reloadAudios() async {
+    // setState(() {
+    //   _loading = 
+    // });
+    final audio = await _audioService.loadAudios();
+    setState(() {
+      _audios = audio;
+      _loading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
-    final audios = context.watch<AudioProvider>().audios;
+    // final audios = _audios;
 
-    final filteredAudios = audios.where((audio) =>
+    final filteredAudios = _audios.where((audio) =>
       audio.audioTitle.toLowerCase().contains(searchText.toLowerCase())
     ).toList();
 
@@ -60,7 +81,9 @@ class _SearchScreenState extends State<SearchScreen> {
             SizedBox(height: 24),
             // Placeholder for results
             Expanded(
-              child: filteredAudios.isEmpty ?
+              child: _loading ? Center(
+                child: CircularProgressIndicator(),
+              ) : filteredAudios.isEmpty ?
               Center(
                 child: Text(
                   'No result found',
