@@ -3,7 +3,6 @@ import 'package:device_preview/device_preview.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
-import 'package:smean_mobile_app/providers/audio_provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/screens/main_screen.dart';
 
@@ -14,9 +13,6 @@ void main() {
         ChangeNotifierProvider(
           create: (context) => LanguageProvider(),
         ),
-        ChangeNotifierProvider(
-          create: (context) => AudioProvider(),
-        )
       ],
       child: DevicePreview(builder: (context) => SmeanApp()),
     ),
@@ -29,12 +25,14 @@ class SmeanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
-
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     final currentTextTheme = isKhmer
       ? GoogleFonts.kantumruyProTextTheme(Theme.of(context).textTheme)
       : GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme);
-
+    // final auth = context.watch<AuthProvider>();
+    // if (!auth.isLoggedIn) {
+    //   return const LoginScreen();
+    // }
     return MaterialApp(
       title: "SMEAN",
       debugShowCheckedModeBanner: false,
