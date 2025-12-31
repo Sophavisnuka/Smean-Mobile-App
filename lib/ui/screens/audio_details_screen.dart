@@ -1,19 +1,87 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/models/audio_class.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
-class AudioDetailsScreen extends StatelessWidget {
-
+class AudioDetailsScreen extends StatefulWidget {
   final AudioRecord audios;
   const AudioDetailsScreen({super.key, required this.audios});
 
-  static const Duration _duration = Duration(minutes: 3, seconds: 42);
-  static const Duration _currentPosition = Duration(seconds: 56);
+  @override
+  State<AudioDetailsScreen> createState() => _AudioDetailsScreenState();
+}
+
+class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
+  final AudioPlayer _player = AudioPlayer();
+
+  bool isPlaying = false;
+  Duration position = Duration.zero;
+  Duration duration = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _player.onPlayerStateChanged.listen((s) {
+      if (!mounted) return;
+      setState(() => isPlaying = (s == PlayerState.playing));
+    });
+
+    _player.onPositionChanged.listen((p) {
+      if (!mounted) return;
+      setState(() => position = p);
+    });
+
+    _player.onDurationChanged.listen((d) {
+      if (!mounted) return;
+      setState(() => duration = d);
+    });
+  }
+
+  Future<void> _togglePlay() async {
+    final source = widget.audios.filePath;
+
+    if (isPlaying) {
+      await _player.pause();
+      return;
+    }
+
+    // Web: filePath may be blob url, Mobile: file path
+    if (kIsWeb) {
+      await _player.play(UrlSource(source));
+    } else {
+      await _player.play(DeviceFileSource(source));
+    }
+  }
+
+  Future<void> _stop() async {
+    await _player.stop();
+    if (!mounted) return;
+    setState(() => position = Duration.zero);
+  }
+
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final m = twoDigits(d.inMinutes.remainder(60));
+    final s = twoDigits(d.inSeconds.remainder(60));
+    return "$m:$s";
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate = DateFormat('MMM dd, yyyy · hh:mm a').format(audios.createdAt);
+    final formattedDate =
+      DateFormat('MMM dd, yyyy · hh:mm a').format(widget.audios.createdAt);
+
+    final maxSeconds = (duration.inSeconds > 0 ? duration.inSeconds : 1).toDouble();
+    final valueSeconds = position.inSeconds.toDouble();
 
     return Scaffold(
       appBar: AppBar(
@@ -27,7 +95,6 @@ class AudioDetailsScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 10),
 
-            // Audio visual
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 10),
@@ -49,7 +116,6 @@ class AudioDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Waveform placeholder (no asset needed yet)
                   Container(
                     height: 36,
                     width: 180,
@@ -69,35 +135,32 @@ class AudioDetailsScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_formatDuration(_currentPosition), style: const TextStyle(fontSize: 12)),
+                      Text(_formatDuration(position), style: const TextStyle(fontSize: 12)),
                       Expanded(
                         child: Slider(
-                          value: _currentPosition.inSeconds.toDouble().clamp(0, _duration.inSeconds.toDouble()),
-                          min: 0,
-                          max: _duration.inSeconds.toDouble().clamp(1, double.infinity),
-                          onChanged: (_) {
-                            // later: seek
+                          value: valueSeconds.clamp(0.0, maxSeconds).toDouble(),
+                          min: 0.0,
+                          max: maxSeconds,
+                          onChanged: (v) async {
+                            await _player.seek(Duration(seconds: v.toInt()));
                           },
                           activeColor: AppColors.primary,
                           inactiveColor: AppColors.primary.withOpacity(0.2),
                         ),
                       ),
-                      Text(_formatDuration(_duration), style: const TextStyle(fontSize: 12)),
+                      Text(_formatDuration(duration), style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // Title + edit icon
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Flexible(
                   child: Text(
-                    audios.audioTitle,
+                    widget.audios.audioTitle,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -106,13 +169,11 @@ class AudioDetailsScreen extends StatelessWidget {
                 Icon(Icons.edit, size: 20, color: AppColors.primary),
               ],
             ),
-
             const SizedBox(height: 8),
             Text(formattedDate, style: TextStyle(color: Colors.grey[700], fontSize: 14)),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                // later: transcribe
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Transcribe clicked (static UI)')),
                 );
@@ -127,49 +188,31 @@ class AudioDetailsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            // Playback controls
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: Icon(Icons.replay_10, size: 32, color: AppColors.primary),
-                  onPressed: () {},
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.skip_previous, size: 32, color: AppColors.primary),
-                  onPressed: () {},
+                  icon: Icon(Icons.stop_circle, size: 32, color: AppColors.primary),
+                  onPressed: _stop,
                 ),
                 const SizedBox(width: 8),
                 Container(
                   decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
                   child: IconButton(
-                    icon: const Icon(Icons.play_arrow, size: 36, color: Colors.white),
-                    onPressed: () {},
+                    icon: Icon(
+                      isPlaying ? Icons.pause : Icons.play_arrow,
+                      size: 36,
+                      color: Colors.white,
+                    ),
+                    onPressed: _togglePlay,
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.skip_next, size: 32, color: AppColors.primary),
-                  onPressed: () {},
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.forward_10, size: 32, color: AppColors.primary),
-                  onPressed: () {},
                 ),
               ],
             ),
           ],
+          
         ),
       ),
     );
-  }
-
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final m = twoDigits(d.inMinutes.remainder(60));
-    final s = twoDigits(d.inSeconds.remainder(60));
-    return "$m:$s";
   }
 }

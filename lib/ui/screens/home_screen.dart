@@ -4,6 +4,7 @@ import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/service/audio_service.dart';
 import 'package:smean_mobile_app/ui/screens/create_audio_screen.dart';
+import 'package:smean_mobile_app/ui/screens/recording_screen.dart';
 import 'package:smean_mobile_app/ui/screens/search_screen.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/ui/widgets/profile_card.dart';
@@ -136,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen>{
       floatingActionButton: FloatingActionButton(
         onPressed: () async{
           final result = await Navigator.of(context).push<AudioRecord>(
-            MaterialPageRoute(builder: (builder) => CreateAudioScreen())
+            MaterialPageRoute(builder: (builder) => RecordScreen())
           );
 
           if (result == null) return;
@@ -147,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen>{
           
           await _audioService.saveAudios(_audios);
         },
-        child: Icon(Icons.add),
+        child: Icon(Icons.mic),
         tooltip: 'Upload Audio',
       ),
       body: Padding(

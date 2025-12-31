@@ -1,18 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
+import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
+
+  @override
+  State<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  final _auth = AuthService();
+
+  Future<void> _handleLogout() async {
+    await _auth.logout();
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Account'),
+        title: Text(isKhmer ? 'គណនី' : 'Account'),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),
@@ -24,13 +40,6 @@ class AccountScreen extends StatelessWidget {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            // Profile Avatar
-            // CircleAvatar(
-            //   radius: 48,
-              
-            //   backgroundColor: Colors.grey[300],
-            //   child: Icon(Icons.person, size: 64, color: Colors.white),
-            // ),
             ClipOval(
               child: Image.asset(
                 'assets/images/Elite.png',
@@ -39,34 +48,40 @@ class AccountScreen extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            SizedBox(height: 16),
-            // Name
-            Text(
+            const SizedBox(height: 16),
+
+            // Username (optional: dynamic later)
+            const Text(
               'Tet Elite',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 24),
-            Divider(),
-            // Account Options
+
+            const SizedBox(height: 24),
+            const Divider(),
+
             ListTile(
-              leading: Icon(Icons.edit),
-              title: Text('Edit Profile'),
+              leading: const Icon(Icons.edit),
+              title: Text(isKhmer ? 'កែប្រែប្រវត្តិ' : 'Edit Profile'),
               onTap: () {},
             ),
             ListTile(
-              leading: Icon(Icons.lock),
-              title: Text('Change Password'),
+              leading: const Icon(Icons.lock),
+              title: Text(isKhmer ? 'ផ្លាស់ប្តូរពាក្យសម្ងាត់' : 'Change Password'),
               onTap: () {},
             ),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
+              leading: const Icon(Icons.settings),
+              title: Text(isKhmer ? 'ការកំណត់' : 'Settings'),
               onTap: () {},
             ),
+
             ListTile(
-              leading: Icon(Icons.logout, color: Colors.red),
-              title: Text('Logout', style: TextStyle(color: Colors.red)),
-              onTap: () {},
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: Text(
+                isKhmer ? 'ចាកចេញ' : 'Logout',
+                style: const TextStyle(color: Colors.red),
+              ),
+              onTap: _handleLogout,
             ),
           ],
         ),
