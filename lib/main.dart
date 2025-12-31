@@ -13,9 +13,7 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (context) => LanguageProvider(),
-        ),
+        ChangeNotifierProvider(create: (context) => LanguageProvider()),
       ],
       // child: DevicePreview(builder: (context) => SmeanApp()),
       child: SmeanApp(),
@@ -31,14 +29,11 @@ class SmeanApp extends StatelessWidget {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     final currentTextTheme = isKhmer
-      ? GoogleFonts.kantumruyProTextTheme(Theme.of(context).textTheme)
-      : GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme);
-    // final auth = context.watch<AuthProvider>();
-    // if (!auth.isLoggedIn) {
-    //   return const LoginScreen();
-    // }
+        ? GoogleFonts.kantumruyProTextTheme(Theme.of(context).textTheme)
+        : GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme);
+
     return MaterialApp(
-      initialRoute: '/splash',
+      // Remove initialRoute, let WelcomeScreen handle routing logic
       routes: {
         '/splash': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
@@ -74,7 +69,8 @@ class SmeanApp extends StatelessWidget {
         // 2. Set Default Font (Poppins for English, Kantumruy Pro for Khmer)
         textTheme: currentTextTheme,
       ),
-      home: WelcomeScreen(),
+      // Always start with WelcomeScreen, it will decide where to go
+      home: const WelcomeScreen(),
     );
   }
 }
