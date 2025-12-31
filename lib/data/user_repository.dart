@@ -22,22 +22,23 @@ class AuthRepository {
     return sha256.convert(bytes).toString();
   }
 
-  static Future<List<User>> _loadUsers(SharedPreferences prefs) async {
+  static Future<List<AppUser>> _loadUsers(SharedPreferences prefs) async {
     final raw = prefs.getString(_usersKey);
     if (raw == null) return [];
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
     final list = (decoded['users'] as List<dynamic>? ?? []);
-    return list.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
+    return list.map((e) => AppUser.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  static Future<void> _saveUsers(SharedPreferences prefs, List<User> users) async {
+  static Future<void> _saveUsers(SharedPreferences prefs, List<AppUser> users) async {
     final map = {'users': users.map((u) => u.toJson()).toList()};
     await prefs.setString(_usersKey, jsonEncode(map));
   }
 
-  static Future<User> register({
+  static Future<AppUser> register({
     required String username,
     required String password,
+    required String emails
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final salt = await _getOrCreateSalt(prefs);
@@ -45,14 +46,16 @@ class AuthRepository {
     final users = await _loadUsers(prefs);
 
     final normalized = username.trim().toLowerCase();
-    final exists = users.any((u) => u.userName.trim().toLowerCase() == normalized);
+    final exists = users.any((u) => u.name.trim().toLowerCase() == normalized);
     if (exists) {
       throw Exception('Username already exists');
     }
 
-    final user = User(
-      userId: const Uuid().v4(),
-      userName: username.trim(),
+    final user = AppUser(
+      id: const Uuid().v4(),
+      name: username.trim(),
+      email: emails,
+      createdAt: DateTime.now(),
       passwordHash: _hashPassword(password, salt),
     );
 
@@ -60,12 +63,12 @@ class AuthRepository {
     await _saveUsers(prefs, users);
 
     // Auto-login after register:
-    await prefs.setString(_currentUserKey, user.userId);
+    await prefs.setString(_currentUserKey, user.id);
 
     return user;
   }
 
-  static Future<User> login({
+  static Future<AppUser> login({
     required String username,
     required String password,
   }) async {
@@ -76,7 +79,7 @@ class AuthRepository {
     final normalized = username.trim().toLowerCase();
 
     final user = users.firstWhere(
-      (u) => u.userName.trim().toLowerCase() == normalized,
+      (u) => u.name.trim().toLowerCase() == normalized,
       orElse: () => throw Exception('User not found'),
     );
 
@@ -85,7 +88,7 @@ class AuthRepository {
       throw Exception('Wrong password');
     }
 
-    await prefs.setString(_currentUserKey, user.userId);
+    await prefs.setString(_currentUserKey, user.id);
     return user;
   }
 
@@ -94,14 +97,14 @@ class AuthRepository {
     await prefs.remove(_currentUserKey);
   }
 
-  static Future<User?> getCurrentUser() async {
+  static Future<AppUser?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString(_currentUserKey);
     if (userId == null) return null;
 
     final users = await _loadUsers(prefs);
     try {
-      return users.firstWhere((u) => u.userId == userId);
+      return users.firstWhere((u) => u.id == userId);
     } catch (_) {
       return null;
     }

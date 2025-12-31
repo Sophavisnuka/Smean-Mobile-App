@@ -2,48 +2,46 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smean_mobile_app/models/audio_class.dart';
+import 'package:smean_mobile_app/service/auth_service.dart';
 
 class AudioRepository {
 
-  static const String _preferenceKey =  'audio_json';
   static const String _assetPath = 'assets/json/audio_repositories.json';
 
+  static Future<String> _userKey() async {
+    final user = await AuthService().getCurrentUser();
+    if (user == null) {
+      throw Exception('No logged in user');
+    }
+    return 'audio_json_${user.id}';
+  }
+
   static Future<List<AudioRecord>> getAudios() async {
-    print('--- getAudios() ---');
-    print('Origin: ${Uri.base.origin}');
-
     final prefs = await SharedPreferences.getInstance();
-    final keys = prefs.getKeys().toList()..sort();
-    print('Prefs keys: $keys');
+    final key = await _userKey();
 
-    String? jsonString = prefs.getString(_preferenceKey);
-    print('Read key "$_preferenceKey": ${jsonString == null ? "NULL" : "LEN ${jsonString.length}"}');
+    String? jsonString = prefs.getString(key);
 
+    // Seed ONLY for first-time user
     if (jsonString == null) {
-      print('Seeding from ASSET: $_assetPath');
       jsonString = await rootBundle.loadString(_assetPath);
-      await prefs.setString(_preferenceKey, jsonString);
-      print('Seeded length: ${jsonString.length}');
-    } else {
-      print('Loaded from PREFS');
+      await prefs.setString(key, jsonString);
     }
 
     final data = jsonDecode(jsonString);
     final List<dynamic> audioJson = data['audios'] ?? [];
-    print('Audios count: ${audioJson.length}');
-    print('First title: ${audioJson.isNotEmpty ? audioJson.first["audioTitle"] : "none"}');
 
     return audioJson.map((json) => AudioRecord.fromJson(json)).toList();
   }
 
-
   static Future<void> saveAudios(List<AudioRecord> audios) async {
     final prefs = await SharedPreferences.getInstance();
+    final key = await _userKey();
 
     final map = {
       'audios': audios.map((a) => a.toJson()).toList()
     };
 
-    await prefs.setString(_preferenceKey, jsonEncode(map));
+    await prefs.setString(key, jsonEncode(map));
   }
 }

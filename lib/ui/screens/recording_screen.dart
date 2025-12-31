@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'package:path_provider/path_provider.dart';
+import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
@@ -28,6 +29,49 @@ class _RecordScreenState extends State<RecordScreen> {
   bool isPlaying = false;
   Duration playPosition = Duration.zero;
   Duration totalDuration = Duration.zero;
+  Future<void> _saveToHome() async {
+    if (recordedFilePath == null) return;
+
+    final controller = TextEditingController();
+
+    final title = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Save recording'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Enter title'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final t = controller.text.trim();
+              if (t.isEmpty) return;
+              Navigator.pop(context, t);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (title == null) return;
+
+    final record = AudioRecord(
+      audioId: 'a_${DateTime.now().millisecondsSinceEpoch}',
+      filePath: recordedFilePath!, // mobile path OR web blob url (MVP)
+      audioTitle: title,
+      createdAt: DateTime.now(),
+    );
+
+    if (!mounted) return;
+    Navigator.pop(context, record); // ✅ return to HomeScreen
+  }
 
   @override
   void initState() {
@@ -60,35 +104,85 @@ class _RecordScreenState extends State<RecordScreen> {
       }
     });
   }
+  
 
   // Ask for microphone access from user Device
-  Future<bool> _requeestPermission() async {
-    final status = await Permission.microphone.request();
+  // Future<bool> _requeestPermission() async {
+  //   final status = await Permission.microphone.request();
 
-    if (!status.isGranted) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Microphone permission is required to record audio.'),
-          ),
-        );
-      }
-      return false;
+  //   if (!status.isGranted) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Microphone permission is required to record audio.'),
+  //         ),
+  //       );
+  //     }
+  //     return false;
+  //   }
+  //   return true;
+  // }
+  Future<bool> _requeestPermission() async {
+    final ok = await _recorder.hasPermission();
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Microphone permission is required.')),
+      );
     }
-    return true;
+    return ok;
   }
 
+  // Future<void> _startRecording() async {
+  //   // Check if user give microphone access
+  //   final hasPermission = await _requeestPermission();
+  //   if (!hasPermission) return;
+
+  //   // Createa a directory and path to store in user private device storage
+  //   final directory = await getApplicationDocumentsDirectory();
+  //   final filePath =
+  //       '${directory.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
+  //   await _recorder.start(const RecordConfig(), path: filePath);
+
+  //   if (mounted) {
+  //     setState(() {
+  //       isRecording = true;
+  //       elapsed = Duration.zero;
+  //     });
+  //   }
+
+  //   // Change the timer to start count
+  //   _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+  //     if (mounted) {
+  //       setState(() {
+  //         elapsed = Duration(seconds: timer.tick);
+  //       });
+  //     }
+  //   });
+  // }
   Future<void> _startRecording() async {
-    // Check if user give microphone access
     final hasPermission = await _requeestPermission();
     if (!hasPermission) return;
 
-    // Createa a directory and path to store in user private device storage
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath =
-        '${directory.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    if (kIsWeb) {
+      // Web: don’t pass a path. Use a web encoder.
+      await _recorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.opus, // best for web
+        ), path: '',
+      );
+    } else {
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath =
+          '${directory.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
-    await _recorder.start(const RecordConfig(), path: filePath);
+      await _recorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc, // matches .m4a better
+        ),
+        path: filePath,
+      );
+    }
 
     if (mounted) {
       setState(() {
@@ -97,37 +191,58 @@ class _RecordScreenState extends State<RecordScreen> {
       });
     }
 
-    // Change the timer to start count
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
-        setState(() {
-          elapsed = Duration(seconds: timer.tick);
-        });
+        setState(() => elapsed = Duration(seconds: timer.tick));
       }
     });
   }
 
   // Stop the recorder
+  // Future<void> _stopRecording() async {
+  //   _timer?.cancel();
+
+  //   final path = await _recorder.stop();
+
+  //   if (mounted) {
+  //     setState(() {
+  //       isRecording = false;
+  //       recordedFilePath = path;
+  //     });
+  //   }
+  // }
   Future<void> _stopRecording() async {
     _timer?.cancel();
-
-    final path = await _recorder.stop();
+    final pathOrUrl = await _recorder.stop(); // mobile: path, web: blob url
 
     if (mounted) {
       setState(() {
         isRecording = false;
-        recordedFilePath = path;
+        recordedFilePath = pathOrUrl;
       });
     }
   }
 
+  // Future<void> _togglePlayback() async {
+  //   if (recordedFilePath == null) return; // No record to play
+
+  //   if (isPlaying) {
+  //     await _player.pause();
+  //   } else {
+  //     await _player.play(DeviceFileSource(recordedFilePath!));
+  //   }
+  // }
   Future<void> _togglePlayback() async {
-    if (recordedFilePath == null) return; // No record to play
+    if (recordedFilePath == null) return;
 
     if (isPlaying) {
       await _player.pause();
     } else {
-      await _player.play(DeviceFileSource(recordedFilePath!));
+      if (kIsWeb) {
+        await _player.play(UrlSource(recordedFilePath!)); // blob url
+      } else {
+        await _player.play(DeviceFileSource(recordedFilePath!)); // file path
+      }
     }
   }
 
@@ -283,6 +398,17 @@ class _RecordScreenState extends State<RecordScreen> {
                   ),
                 ],
               ),
+                if (recordedFilePath != null && !isRecording) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _saveToHome,
+                      icon: const Icon(Icons.save),
+                      label: const Text('Save'),
+                    ),
+                  ),
+                ],
             ],
           ],
         ),
