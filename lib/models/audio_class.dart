@@ -4,13 +4,15 @@ class AudioRecord {
   final String audioTitle;
   final DateTime createdAt;
   final int duration;
+  final bool isFavorite;
 
   AudioRecord({
     required this.audioId,
     required this.filePath,
     required this.audioTitle,
     required this.createdAt,
-    required this.duration
+    required this.duration,
+    this.isFavorite = false,
   });
 
   factory AudioRecord.fromJson(Map<String, dynamic> json) {
@@ -19,7 +21,8 @@ class AudioRecord {
       filePath: json['filePath'] as String,
       audioTitle: json['audioTitle'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      duration: (json['duration'] ?? 0) as int
+      duration: (json['duration'] ?? 0) as int,
+      isFavorite: (json['isFavorite'] ?? false) as bool,
     );
   }
   Duration get getDuration => Duration(seconds: duration);
@@ -30,7 +33,8 @@ class AudioRecord {
       'audioTitle': audioTitle,
       'filePath': filePath,
       'createdAt': createdAt.toIso8601String(),
-      'duration': duration
+      'duration': duration,
+      'isFavorite': isFavorite,
     };
   }
 }

@@ -105,13 +105,19 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate = DateFormat('MMM dd, yyyy · hh:mm a').format(widget.audios.createdAt);
-    final maxSeconds = (duration.inSeconds > 0 ? duration.inSeconds : 1).toDouble();
+    final formattedDate = DateFormat(
+      'MMM dd, yyyy · hh:mm a',
+    ).format(widget.audios.createdAt);
+    final maxSeconds = (duration.inSeconds > 0 ? duration.inSeconds : 1)
+        .toDouble();
     final valueSeconds = position.inSeconds.toDouble();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Details', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Details',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: Padding(
@@ -125,7 +131,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 10),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.08),
+                color: AppColors.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Column(
@@ -147,7 +153,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                     width: 180,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -161,7 +167,10 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(formatDuration(position), style: const TextStyle(fontSize: 12)),
+                      Text(
+                        formatDuration(position),
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       Expanded(
                         child: Slider(
                           value: valueSeconds.clamp(0.0, maxSeconds).toDouble(),
@@ -171,10 +180,15 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                             await _player.seek(Duration(seconds: v.toInt()));
                           },
                           activeColor: AppColors.primary,
-                          inactiveColor: AppColors.primary.withOpacity(0.2),
+                          inactiveColor: AppColors.primary.withValues(
+                            alpha: 0.2,
+                          ),
                         ),
                       ),
-                      Text(formatDuration(duration), style: const TextStyle(fontSize: 12)),
+                      Text(
+                        formatDuration(duration),
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ],
                   ),
                 ],
@@ -187,7 +201,10 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                 Flexible(
                   child: Text(
                     widget.audios.audioTitle,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -196,7 +213,10 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(formattedDate, style: TextStyle(color: Colors.grey[700], fontSize: 14)),
+            Text(
+              formattedDate,
+              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+            ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: isGenerating ? null : _generateMockTranscript,
@@ -204,15 +224,25 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Icon(Icons.text_snippet, size: 20),
-              label: Text(isGenerating ? 'Generating...' : 'Generate Transcript'),
+              label: Text(
+                isGenerating ? 'Generating...' : 'Generate Transcript',
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -240,15 +270,13 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                         IconButton(
                           tooltip: 'Clear',
                           icon: const Icon(Icons.close, size: 18),
-                          onPressed: () => setState(() => transcriptText = null),
+                          onPressed: () =>
+                              setState(() => transcriptText = null),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      transcriptText!,
-                      style: const TextStyle(height: 1.4),
-                    ),
+                    Text(transcriptText!, style: const TextStyle(height: 1.4)),
                   ],
                 ),
               ),
@@ -259,12 +287,19 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: Icon(Icons.stop_circle, size: 32, color: AppColors.primary),
+                  icon: Icon(
+                    Icons.stop_circle,
+                    size: 32,
+                    color: AppColors.primary,
+                  ),
                   onPressed: _stop,
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
                   child: IconButton(
                     icon: Icon(
                       isPlaying ? Icons.pause : Icons.play_arrow,
@@ -277,7 +312,6 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
               ],
             ),
           ],
-          
         ),
       ),
     );

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
-import 'package:smean_mobile_app/ui/screens/account_screen.dart';
 
 class ProfileCard extends StatefulWidget {
-  const ProfileCard({
-    super.key,
-    required this.isKhmer,
-  });
+  const ProfileCard({super.key, required this.isKhmer, this.onTap});
 
   final bool isKhmer;
+  final VoidCallback? onTap;
 
   @override
   State<ProfileCard> createState() => _ProfileCardState();
@@ -35,8 +32,8 @@ class _ProfileCardState extends State<ProfileCard> {
   @override
   Widget build(BuildContext context) {
     final displayName = _name.isEmpty
-      ? (widget.isKhmer ? 'អ្នកប្រើប្រាស់' : 'User')
-      : _name;
+        ? (widget.isKhmer ? 'អ្នកប្រើប្រាស់' : 'User')
+        : _name;
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -47,11 +44,7 @@ class _ProfileCardState extends State<ProfileCard> {
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         splashColor: Colors.white24,
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const AccountScreen()),
-          );
-        },
+        onTap: widget.onTap,
         child: Row(
           children: [
             ClipOval(
@@ -89,7 +82,7 @@ class _ProfileCardState extends State<ProfileCard> {
                       size: 14,
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ],
