@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/service/audio_service.dart';
-import 'package:smean_mobile_app/ui/screens/create_audio_screen.dart';
 import 'package:smean_mobile_app/ui/screens/recording_screen.dart';
 import 'package:smean_mobile_app/ui/screens/search_screen.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
@@ -68,18 +67,10 @@ class _HomeScreenState extends State<HomeScreen>{
 
     if (newTitle == null) return;
 
+    final updateAudio = await _audioService.updateAudio(newTitle, audio.audioId, _audios);
     setState(() {
-      final idx = _audios.indexWhere((a) => a.audioId == audio.audioId);
-      if (idx == -1) return;
-
-      _audios[idx] = AudioRecord(
-        audioId: _audios[idx].audioId,
-        audioTitle: newTitle,
-        createdAt: _audios[idx].createdAt,
-        filePath: _audios[idx].filePath,
-      );
+      _audios = updateAudio;
     });
-    await _audioService.saveAudios(_audios);
   }
   Future<void> _deleteCard(AudioRecord audio) async {
     final onConfirm = await showDialog<bool>(

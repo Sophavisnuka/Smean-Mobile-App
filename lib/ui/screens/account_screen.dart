@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
+import 'package:smean_mobile_app/ui/widgets/profile_card.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -37,25 +38,10 @@ class _AccountScreenState extends State<AccountScreen> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         child: Column(
           children: [
-            ClipOval(
-              child: Image.asset(
-                'assets/images/Elite.png',
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Username (optional: dynamic later)
-            const Text(
-              'Tet Elite',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-
+            ProfileCard(isKhmer: isKhmer),
             const SizedBox(height: 24),
             const Divider(),
 

@@ -1,68 +1,43 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user_class.dart';
+import 'package:smean_mobile_app/repository/user_repository.dart';
+import 'package:smean_mobile_app/models/user_class.dart';
 
 class AuthService {
-  static const _usersKey = 'users_json';
-  static const _currentUserKey = 'current_user_id';
+  final AuthRepository _repo = AuthRepository();
 
   String _hashPassword(String password) {
-    // Demo hash (not as strong as bcrypt/argon2, but better than plain text)
     final bytes = utf8.encode(password);
     return sha256.convert(bytes).toString();
   }
 
-  String _newId() {
-    return 'u_${DateTime.now().millisecondsSinceEpoch}';
-  }
-
-  Future<List<AppUser>> _loadUsers(SharedPreferences sp) async {
-    final raw = sp.getString(_usersKey);
-    if (raw == null || raw.trim().isEmpty) return [];
-    final list = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
-    return list.map((e) => AppUser.fromJson(e)).toList();
-  }
-
-  Future<void> _saveUsers(SharedPreferences sp, List<AppUser> users) async {
-    final raw = jsonEncode(users.map((u) => u.toJson()).toList());
-    await sp.setString(_usersKey, raw);
-  }
+  String _newId() => 'u_${DateTime.now().millisecondsSinceEpoch}';
 
   Future<AppUser?> getCurrentUser() async {
-    final sp = await SharedPreferences.getInstance();
-    final currentId = sp.getString(_currentUserKey);
-    if (currentId == null) return null;
+    final id = await _repo.getCurrentUserId();
+    if (id == null) return null;
 
-    final users = await _loadUsers(sp);
+    final users = await _repo.loadUsers();
     try {
-      return users.firstWhere((u) => u.id == currentId);
+      return users.firstWhere((u) => u.id == id);
     } catch (_) {
       return null;
     }
   }
 
-  Future<void> logout() async {
-    final sp = await SharedPreferences.getInstance();
-    await sp.remove(_currentUserKey);
-  }
+  Future<void> logout() => _repo.clearCurrentUser();
 
   Future<(bool ok, String message)> register({
     required String name,
     required String email,
     required String password,
   }) async {
-    final sp = await SharedPreferences.getInstance();
-    final users = await _loadUsers(sp);
-
+    final users = await _repo.loadUsers();
     final normalizedEmail = email.trim().toLowerCase();
 
-    final exists = users.any((u) => u.email.toLowerCase() == normalizedEmail);
-    if (exists) {
+    if (users.any((u) => u.email.toLowerCase() == normalizedEmail)) {
       return (false, 'Email already exists.');
     }
-
     if (password.length < 6) {
       return (false, 'Password must be at least 6 characters.');
     }
@@ -76,10 +51,8 @@ class AuthService {
     );
 
     users.add(user);
-    await _saveUsers(sp, users);
-
-    // auto-login after register (nice for demo)
-    await sp.setString(_currentUserKey, user.id);
+    await _repo.saveUsers(users);
+    await _repo.setCurrentUserId(user.id);
 
     return (true, 'Registered successfully.');
   }
@@ -88,28 +61,17 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final sp = await SharedPreferences.getInstance();
-    final users = await _loadUsers(sp);
-
+    final users = await _repo.loadUsers();
     final normalizedEmail = email.trim().toLowerCase();
     final hash = _hashPassword(password);
 
-    final user = users.where((u) => u.email.toLowerCase() == normalizedEmail).toList();
-    if (user.isEmpty) return (false, 'Email not found.');
+    final matches = users.where((u) => u.email.toLowerCase() == normalizedEmail);
+    if (matches.isEmpty) return (false, 'Email not found.');
 
-    if (user.first.passwordHash != hash) {
-      return (false, 'Incorrect password.');
-    }
+    final user = matches.first;
+    if (user.passwordHash != hash) return (false, 'Incorrect password.');
 
-    await sp.setString(_currentUserKey, user.first.id);
+    await _repo.setCurrentUserId(user.id);
     return (true, 'Login successful.');
-  }
-
-  // Optional: for debugging/demo
-  Future<void> debugClearAll() async {
-    if (!kDebugMode) return;
-    final sp = await SharedPreferences.getInstance();
-    await sp.remove(_usersKey);
-    await sp.remove(_currentUserKey);
   }
 }
