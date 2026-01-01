@@ -137,14 +137,6 @@ class RecordAudioService {
     onStateChanged?.call();
   }
   
-  // Format duration to MM:SS
-  String formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(d.inMinutes.remainder(60));
-    final seconds = twoDigits(d.inSeconds.remainder(60));
-    return "$minutes:$seconds";
-  }
-  
   // Clean up resources
   void dispose() {
     _timer?.cancel();

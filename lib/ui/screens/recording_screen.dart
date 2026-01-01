@@ -1,9 +1,14 @@
-import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smean_mobile_app/constants/app_colors.dart';
+import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/service/record_audio_service.dart';
+import 'package:smean_mobile_app/utils/formatting.dart';
+import 'package:uuid/uuid.dart';
+
+const uuid = Uuid();
 
 class RecordScreen extends StatefulWidget {
   const RecordScreen({super.key});
@@ -49,26 +54,17 @@ class _RecordScreenState extends State<RecordScreen> {
     if (title == null) return;
 
     final record = AudioRecord(
-      audioId: 'a_${DateTime.now().millisecondsSinceEpoch}',
+      audioId: uuid.v4(),
       filePath: _audioService.recordedFilePath!,
       audioTitle: title,
       createdAt: DateTime.now(),
+      duration: _audioService.totalDuration.inSeconds
     );
 
     if (!mounted) return;
     Navigator.pop(context, record); //return to HomeScreen
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _audioService = RecordAudioService();
-    _audioService.onStateChanged = () {
-      if (mounted) {
-        setState(() {});
-      }
-    };
-  }
 
   Future<void> _handleRecordingToggle() async {
     if (_audioService.isRecording) {
@@ -82,7 +78,16 @@ class _RecordScreenState extends State<RecordScreen> {
       }
     }
   }
-
+  @override
+  void initState() {
+    super.initState();
+    _audioService = RecordAudioService();
+    _audioService.onStateChanged = () {
+      if (mounted) {
+        setState(() {});
+      }
+    };
+  }
   @override
   void dispose() {
     _audioService.dispose();
@@ -111,10 +116,10 @@ class _RecordScreenState extends State<RecordScreen> {
             // Timer Display
             Text(
               _audioService.isRecording
-                  ? _audioService.formatDuration(_audioService.elapsed)
-                  : _audioService.recordedFilePath != null
-                  ? _audioService.formatDuration(_audioService.playPosition)
-                  : '00:00',
+                ? formatDuration(_audioService.elapsed)
+                : _audioService.recordedFilePath != null
+                ? formatDuration(_audioService.playPosition)
+                : '00:00',
               style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
             ),
 
@@ -123,14 +128,14 @@ class _RecordScreenState extends State<RecordScreen> {
               Slider(
                 value: _audioService.playPosition.inSeconds.toDouble(),
                 max: _audioService.totalDuration.inSeconds.toDouble() > 0
-                    ? _audioService.totalDuration.inSeconds.toDouble()
-                    : 1,
+                  ? _audioService.totalDuration.inSeconds.toDouble()
+                  : 1,
                 onChanged: (value) async {
                   await _audioService.seekTo(Duration(seconds: value.toInt()));
                 },
               ),
               Text(
-                '${_audioService.formatDuration(_audioService.playPosition)} / ${_audioService.formatDuration(_audioService.totalDuration)}',
+                '${formatDuration(_audioService.playPosition)} / ${formatDuration(_audioService.totalDuration)}',
                 style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
             ],
@@ -156,12 +161,12 @@ class _RecordScreenState extends State<RecordScreen> {
 
             Text(
               _audioService.isRecording
-                  ? (isKhmer ? 'កំពុងថតសម្លេង...' : 'Recording...')
-                  : _audioService.recordedFilePath != null
-                  ? (isKhmer ? 'ថតរួច' : 'Recording saved')
-                  : (isKhmer
-                        ? 'ចុចដើម្បីចាប់ផ្តើមថត'
-                        : 'Tap to start recording'),
+                ? (isKhmer ? 'កំពុងថតសម្លេង...' : 'Recording...')
+                : _audioService.recordedFilePath != null
+                ? (isKhmer ? 'ថតរួច' : 'Recording saved')
+                : (isKhmer
+                  ? 'ចុចដើម្បីចាប់ផ្តើមថត'
+                  : 'Tap to start recording'),
               style: TextStyle(fontSize: 18, color: Colors.grey[700]),
             ),
 
@@ -197,15 +202,18 @@ class _RecordScreenState extends State<RecordScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _saveToHome,
-                  icon: const Icon(Icons.save),
-                  label: const Text('Save'),
-                ),
+              SizedBox(height: 16),
+              ElevatedButton.icon(
+              onPressed: _saveToHome,
+              icon: const Icon(Icons.text_snippet, size: 20),
+              label: const Text('Save to home'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
+            ),
             ],
           ],
         ),

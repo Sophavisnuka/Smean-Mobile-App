@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/models/audio_class.dart';
+import 'package:smean_mobile_app/service/transcript_service.dart';
+import 'package:smean_mobile_app/utils/formatting.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AudioDetailsScreen extends StatefulWidget {
@@ -15,10 +17,12 @@ class AudioDetailsScreen extends StatefulWidget {
 
 class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
   final AudioPlayer _player = AudioPlayer();
-
+  final TranscriptService transcriptService = TranscriptService();
   bool isPlaying = false;
   Duration position = Duration.zero;
   Duration duration = Duration.zero;
+  String? transcriptText;
+  bool isGenerating = false;
 
   @override
   void initState() {
@@ -62,11 +66,35 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
     setState(() => position = Duration.zero);
   }
 
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final m = twoDigits(d.inMinutes.remainder(60));
-    final s = twoDigits(d.inSeconds.remainder(60));
-    return "$m:$s";
+  Future<void> _generateMockTranscript() async {
+    if (isGenerating) return;
+
+    setState(() {
+      isGenerating = true;
+    });
+
+    try {
+      final t = await transcriptService.generateMock(
+        widget.audios.audioId,
+        widget.audios.audioTitle,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        transcriptText = t?.text ?? 'No transcript generated.';
+        isGenerating = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        isGenerating = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate transcript: $e')),
+      );
+    }
   }
 
   @override
@@ -77,9 +105,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate =
-      DateFormat('MMM dd, yyyy · hh:mm a').format(widget.audios.createdAt);
-
+    final formattedDate = DateFormat('MMM dd, yyyy · hh:mm a').format(widget.audios.createdAt);
     final maxSeconds = (duration.inSeconds > 0 ? duration.inSeconds : 1).toDouble();
     final valueSeconds = position.inSeconds.toDouble();
 
@@ -135,7 +161,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_formatDuration(position), style: const TextStyle(fontSize: 12)),
+                      Text(formatDuration(position), style: const TextStyle(fontSize: 12)),
                       Expanded(
                         child: Slider(
                           value: valueSeconds.clamp(0.0, maxSeconds).toDouble(),
@@ -148,7 +174,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                           inactiveColor: AppColors.primary.withOpacity(0.2),
                         ),
                       ),
-                      Text(_formatDuration(duration), style: const TextStyle(fontSize: 12)),
+                      Text(formatDuration(duration), style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                 ],
@@ -173,13 +199,15 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
             Text(formattedDate, style: TextStyle(color: Colors.grey[700], fontSize: 14)),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Transcribe clicked (static UI)')),
-                );
-              },
-              icon: const Icon(Icons.text_snippet, size: 20),
-              label: const Text('Generate Transcribe'),
+              onPressed: isGenerating ? null : _generateMockTranscript,
+              icon: isGenerating
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.text_snippet, size: 20),
+              label: Text(isGenerating ? 'Generating...' : 'Generate Transcript'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -187,6 +215,45 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
+            const SizedBox(height: 16),
+            if (transcriptText != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.article_outlined, size: 18),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Transcript',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          tooltip: 'Clear',
+                          icon: const Icon(Icons.close, size: 18),
+                          onPressed: () => setState(() => transcriptText = null),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      transcriptText!,
+                      style: const TextStyle(height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
             const SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

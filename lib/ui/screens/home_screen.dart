@@ -92,17 +92,23 @@ class _HomeScreenState extends State<HomeScreen>{
     });
     await _audioService.saveAudios(_audios);
 
+    if (!mounted) return;
+
+    // Clear any existing snackbars first
+    ScaffoldMessenger.of(context).clearSnackBars();
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Removed ${removedAudio.audioTitle}'),
-        duration: Duration(seconds: 3),
+        duration: const Duration(seconds: 3),
         action: SnackBarAction(
           label: 'undo', 
-          onPressed: () async {
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
             setState(() {
               _audios.insert(removedIndex, removedAudio);
             });
-            await _audioService.saveAudios(_audios);
+            _audioService.saveAudios(_audios);
           }
         ),
       )
@@ -113,7 +119,6 @@ class _HomeScreenState extends State<HomeScreen>{
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
-
     return Scaffold(
       appBar: AppBar(
         title: Image.asset('assets/images/Smean-Logo.png', height: 50),
@@ -130,14 +135,11 @@ class _HomeScreenState extends State<HomeScreen>{
           final result = await Navigator.of(context).push<AudioRecord>(
             MaterialPageRoute(builder: (builder) => RecordScreen())
           );
-
           if (result == null) return;
-      
+          final newAudio = await _audioService.addAudio(result);
           setState(() {
-            _audios.add(result);
+            _audios = newAudio;
           });
-          
-          await _audioService.saveAudios(_audios);
         },
         child: Icon(Icons.mic),
         tooltip: 'Upload Audio',
@@ -176,13 +178,7 @@ class _HomeScreenState extends State<HomeScreen>{
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(isKhmer ? 'សំឡេងទាំងអស់' : 'All Voice Recorded', style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
-                Row(
-                  children: [
-                    Text('Sort By', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                    SizedBox(width: 5),
-                    Icon(Icons.sort, color: Colors.black, size: 17),
-                  ],
-                ),
+                Icon(Icons.bookmark, color: Colors.grey, size: 25),
               ],
             ),
             SizedBox(height: 15),
