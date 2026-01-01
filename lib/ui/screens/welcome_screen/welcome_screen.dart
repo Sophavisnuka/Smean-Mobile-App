@@ -3,8 +3,8 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'intro_screen.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
+import 'package:smean_mobile_app/ui/screens/main/main_screen.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
-import 'package:smean_mobile_app/ui/screens/main_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});

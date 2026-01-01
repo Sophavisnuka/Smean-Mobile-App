@@ -1,13 +1,13 @@
 class AudioCategory {
   final String audioCategoryId;
   final String audioId;
-  final String CategoryId;
+  final String categoryId;
   final DateTime createdAt;
 
   AudioCategory({
     required this.audioCategoryId,
     required this.audioId,
-    required this.CategoryId,
+    required this.categoryId,
     required this.createdAt,
   });
 
@@ -15,7 +15,7 @@ class AudioCategory {
     return AudioCategory(
       audioCategoryId: json['audioCategoryId'] as String,
       audioId: json['audioId'] as String,
-      CategoryId: json['CategoryId'] as String,
+      categoryId: json['CategoryId'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -24,7 +24,7 @@ class AudioCategory {
     return {
       'audioCategoryId': audioCategoryId,
       'audioId': audioId,
-      'CategoryId': CategoryId,
+      'CategoryId': categoryId,
       'createdAt': createdAt.toIso8601String(),
     };
   }

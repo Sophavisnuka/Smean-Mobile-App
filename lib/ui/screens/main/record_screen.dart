@@ -5,13 +5,16 @@ import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/service/record_audio_service.dart';
+import 'package:smean_mobile_app/service/audio_service.dart';
 import 'package:smean_mobile_app/utils/formatting.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
 
 class RecordScreen extends StatefulWidget {
-  const RecordScreen({super.key});
+  const RecordScreen({super.key, this.onRecordingSaved});
+
+  final VoidCallback? onRecordingSaved;
 
   @override
   State<RecordScreen> createState() => _RecordScreenState();
@@ -19,6 +22,7 @@ class RecordScreen extends StatefulWidget {
 
 class _RecordScreenState extends State<RecordScreen> {
   late RecordAudioService _audioService;
+  final AudioService _audioSaveService = AudioService();
 
   Future<void> _saveToHome() async {
     if (_audioService.recordedFilePath == null) return;
@@ -58,13 +62,29 @@ class _RecordScreenState extends State<RecordScreen> {
       filePath: _audioService.recordedFilePath!,
       audioTitle: title,
       createdAt: DateTime.now(),
-      duration: _audioService.totalDuration.inSeconds
+      duration: _audioService.totalDuration.inSeconds,
     );
 
-    if (!mounted) return;
-    Navigator.pop(context, record); //return to HomeScreen
-  }
+    // Save to audio service
+    await _audioSaveService.addAudio(record);
 
+    if (!mounted) return;
+
+    // Clean up recording state
+    await _audioService.deleteRecording();
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Recording saved: $title'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    // Call callback to switch back to home and reload
+    widget.onRecordingSaved?.call();
+  }
 
   Future<void> _handleRecordingToggle() async {
     if (_audioService.isRecording) {
@@ -78,6 +98,7 @@ class _RecordScreenState extends State<RecordScreen> {
       }
     }
   }
+
   @override
   void initState() {
     super.initState();
@@ -88,6 +109,7 @@ class _RecordScreenState extends State<RecordScreen> {
       }
     };
   }
+
   @override
   void dispose() {
     _audioService.dispose();
@@ -116,20 +138,21 @@ class _RecordScreenState extends State<RecordScreen> {
             // Timer Display
             Text(
               _audioService.isRecording
-                ? formatDuration(_audioService.elapsed)
-                : _audioService.recordedFilePath != null
-                ? formatDuration(_audioService.playPosition)
-                : '00:00',
+                  ? formatDuration(_audioService.elapsed)
+                  : _audioService.recordedFilePath != null
+                  ? formatDuration(_audioService.playPosition)
+                  : '00:00',
               style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
             ),
 
-            if (_audioService.recordedFilePath != null && !_audioService.isRecording) ...[
+            if (_audioService.recordedFilePath != null &&
+                !_audioService.isRecording) ...[
               const SizedBox(height: 20),
               Slider(
                 value: _audioService.playPosition.inSeconds.toDouble(),
                 max: _audioService.totalDuration.inSeconds.toDouble() > 0
-                  ? _audioService.totalDuration.inSeconds.toDouble()
-                  : 1,
+                    ? _audioService.totalDuration.inSeconds.toDouble()
+                    : 1,
                 onChanged: (value) async {
                   await _audioService.seekTo(Duration(seconds: value.toInt()));
                 },
@@ -147,10 +170,14 @@ class _RecordScreenState extends State<RecordScreen> {
                 onTap: _handleRecordingToggle,
                 child: CircleAvatar(
                   radius: 48,
-                  backgroundColor: _audioService.isRecording ? Colors.red : Colors.grey[300],
+                  backgroundColor: _audioService.isRecording
+                      ? Colors.red
+                      : Colors.grey[300],
                   child: Icon(
                     _audioService.isRecording ? Icons.stop : Icons.mic,
-                    color: _audioService.isRecording ? Colors.white : Colors.black,
+                    color: _audioService.isRecording
+                        ? Colors.white
+                        : Colors.black,
                     size: 48,
                   ),
                 ),
@@ -161,16 +188,17 @@ class _RecordScreenState extends State<RecordScreen> {
 
             Text(
               _audioService.isRecording
-                ? (isKhmer ? 'កំពុងថតសម្លេង...' : 'Recording...')
-                : _audioService.recordedFilePath != null
-                ? (isKhmer ? 'ថតរួច' : 'Recording saved')
-                : (isKhmer
-                  ? 'ចុចដើម្បីចាប់ផ្តើមថត'
-                  : 'Tap to start recording'),
+                  ? (isKhmer ? 'កំពុងថតសម្លេង...' : 'Recording...')
+                  : _audioService.recordedFilePath != null
+                  ? (isKhmer ? 'ថតរួច' : 'Recording saved')
+                  : (isKhmer
+                        ? 'ចុចដើម្បីចាប់ផ្តើមថត'
+                        : 'Tap to start recording'),
               style: TextStyle(fontSize: 18, color: Colors.grey[700]),
             ),
 
-            if (_audioService.recordedFilePath != null && !_audioService.isRecording) ...[
+            if (_audioService.recordedFilePath != null &&
+                !_audioService.isRecording) ...[
               const SizedBox(height: 40),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -179,7 +207,9 @@ class _RecordScreenState extends State<RecordScreen> {
                   IconButton(
                     iconSize: 48,
                     icon: Icon(
-                      _audioService.isPlaying ? Icons.pause_circle : Icons.play_circle,
+                      _audioService.isPlaying
+                          ? Icons.pause_circle
+                          : Icons.play_circle,
                     ),
                     onPressed: _audioService.togglePlayback,
                     color: Colors.blue,
@@ -204,16 +234,21 @@ class _RecordScreenState extends State<RecordScreen> {
               ),
               SizedBox(height: 16),
               ElevatedButton.icon(
-              onPressed: _saveToHome,
-              icon: const Icon(Icons.text_snippet, size: 20),
-              label: const Text('Save to home'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                onPressed: _saveToHome,
+                icon: const Icon(Icons.text_snippet, size: 20),
+                label: const Text('Save to home'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
-            ),
             ],
           ],
         ),

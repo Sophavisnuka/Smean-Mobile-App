@@ -19,7 +19,7 @@ class LanguageSwitcherButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2), // Glass effect
+          color: Colors.white.withValues(alpha: 0.2), // Glass effect
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.white, width: 1),
         ),
@@ -28,8 +28,11 @@ class LanguageSwitcherButton extends StatelessWidget {
           children: [
             // Flag or Text Icon
             Text(
-              isEnglish ? "🇺🇸 EN" : "🇰🇭 KH", 
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              isEnglish ? "🇺🇸 EN" : "🇰🇭 KH",
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(width: 8),
             const Icon(Icons.swap_horiz, color: Colors.white, size: 18),

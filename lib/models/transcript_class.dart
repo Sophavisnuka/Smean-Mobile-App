@@ -1,5 +1,3 @@
-import 'package:smean_mobile_app/models/audio_class.dart';
-
 class Transcript {
   final String transcriptId;
   final String text;
@@ -12,12 +10,9 @@ class Transcript {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'transcriptId': transcriptId,
-      'text': text,
-      'audioId': audioId
-    };
+    return {'transcriptId': transcriptId, 'text': text, 'audioId': audioId};
   }
+
   factory Transcript.fromJson(Map<String, dynamic> json) => Transcript(
     transcriptId: json['transcriptId'] as String,
     audioId: json['audioId'] as String,

@@ -14,7 +14,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class SearchScreenState extends State<SearchScreen> {
-  String searchText = ''; 
+  String searchText = '';
   List<AudioRecord> _audios = [];
   final AudioService _audioService = AudioService();
   bool _loading = true;
@@ -39,13 +39,16 @@ class SearchScreenState extends State<SearchScreen> {
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     // final audios = _audios;
 
-    final filteredAudios = _audios.where((audio) =>
-      audio.audioTitle.toLowerCase().contains(searchText.toLowerCase())
-    ).toList();
+    final filteredAudios = _audios
+        .where(
+          (audio) =>
+              audio.audioTitle.toLowerCase().contains(searchText.toLowerCase()),
+        )
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isKhmer ? 'ស្វែងរក':'Search'),
+        title: Text(isKhmer ? 'ស្វែងរក' : 'Search'),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),
@@ -73,32 +76,37 @@ class SearchScreenState extends State<SearchScreen> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[100],
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 16,
+                ),
               ),
             ),
             SizedBox(height: 24),
             // Placeholder for results
             Expanded(
-              child: _loading ? Center(
-                child: CircularProgressIndicator(),
-              ) : filteredAudios.isEmpty ?
-              Center(
-                child: Text(
-                  'No result found',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                ),
-              ) :
-              ListView.separated(
-                itemCount: filteredAudios.length,
-                separatorBuilder:(context, index) => SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final audio = filteredAudios[index];
-                  return RecentActivityCard(
-                    audio: audio, 
-                    isKhmer: isKhmer
-                  );
-                },
-              ),
+              child: _loading
+                  ? Center(child: CircularProgressIndicator())
+                  : filteredAudios.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No result found',
+                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                      ),
+                    )
+                  : ListView.separated(
+                      itemCount: filteredAudios.length,
+                      separatorBuilder: (context, index) =>
+                          SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final audio = filteredAudios[index];
+                        return RecentActivityCard(
+                          audio: audio,
+                          isKhmer: isKhmer,
+                          searchQuery: searchText,
+                        );
+                      },
+                    ),
             ),
           ],
         ),
