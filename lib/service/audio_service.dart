@@ -8,6 +8,13 @@ class AudioService {
   Future<void> saveAudios(List<AudioRecord> audios) async {
     return await AudioRepository.saveAudios(audios);
   }
+  Future<List<AudioRecord>> addAudio(AudioRecord audio) async {
+    final currentAudio = await loadAudios();
+    final newAudio = List.of(currentAudio);
+    newAudio.add(audio);
+    await saveAudios(newAudio);
+    return newAudio;
+  }
   Future<List<AudioRecord>> updateAudio(String newTitle, String audioId, List<AudioRecord> currentAudio) async {
     final updated = List.of(currentAudio);
     for (int i = 0; i < updated.length; i++) {
@@ -17,7 +24,8 @@ class AudioService {
           audioId: oldAudio.audioId, 
           filePath: oldAudio.filePath, 
           audioTitle: newTitle, 
-          createdAt: oldAudio.createdAt
+          createdAt: oldAudio.createdAt,
+          duration: oldAudio.duration
         );
         break;
       }

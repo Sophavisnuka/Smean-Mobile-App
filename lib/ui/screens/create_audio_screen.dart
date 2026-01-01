@@ -22,8 +22,9 @@ class _CreateAudioScreenState extends State<CreateAudioScreen> {
     final record = AudioRecord(
       audioId: const Uuid().v4(),
       audioTitle: title,
-      createdAt: DateTime.now(), // adjust if your model uses DateTime
-      filePath: '', // empty for now (no recording yet)
+      createdAt: DateTime.now(),
+      filePath: '',
+      duration: 0
     );
 
     Navigator.pop(context, record);

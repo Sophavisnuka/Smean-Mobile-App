@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:smean_mobile_app/repository/user_repository.dart';
 import 'package:smean_mobile_app/models/user_class.dart';
+import 'package:uuid/uuid.dart';
 
 class AuthService {
   final AuthRepository _repo = AuthRepository();
@@ -11,7 +12,7 @@ class AuthService {
     return sha256.convert(bytes).toString();
   }
 
-  String _newId() => 'u_${DateTime.now().millisecondsSinceEpoch}';
+  String _newId() => Uuid().v4();
 
   Future<AppUser?> getCurrentUser() async {
     final id = await _repo.getCurrentUserId();
