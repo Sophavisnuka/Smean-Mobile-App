@@ -26,7 +26,6 @@ class _ProfileCardState extends State<ProfileCard> {
 
   Future<void> _loadUser() async {
     final user = await AuthService().getCurrentUser();
-    if (!mounted) return;
 
     setState(() {
       _name = user?.name ?? '';
@@ -36,8 +35,8 @@ class _ProfileCardState extends State<ProfileCard> {
   @override
   Widget build(BuildContext context) {
     final displayName = _name.isEmpty
-        ? (widget.isKhmer ? 'អ្នកប្រើប្រាស់' : 'User')
-        : _name;
+      ? (widget.isKhmer ? 'អ្នកប្រើប្រាស់' : 'User')
+      : _name;
 
     return Container(
       padding: const EdgeInsets.all(10),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/ui/screens/home_screen.dart';
-import 'package:smean_mobile_app/ui/screens/recording_screen.dart';
 import 'package:smean_mobile_app/ui/screens/search_screen.dart';
 import 'package:smean_mobile_app/ui/screens/account_screen.dart';
 
@@ -27,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           HomeScreen(),
           SearchScreen(key: _searchKey),
-          RecordScreen(),
+          // RecordScreen(),
           AccountScreen()
         ],
       ),
@@ -53,10 +52,10 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.search),
             label: 'Search'
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.mic),
-            label: 'Record'
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.mic),
+          //   label: 'Record'
+          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: 'Account'

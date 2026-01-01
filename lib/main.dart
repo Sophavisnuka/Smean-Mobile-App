@@ -15,8 +15,8 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (context) => LanguageProvider()),
       ],
-      // child: DevicePreview(builder: (context) => SmeanApp()),
-      child: SmeanApp(),
+      child: DevicePreview(builder: (context) => SmeanApp()),
+      // child: SmeanApp(),
     ),
   );
 }

@@ -4,6 +4,7 @@ import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/service/audio_service.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
+import 'package:smean_mobile_app/ui/widgets/recent_activity_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -25,9 +26,6 @@ class SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> reloadAudios() async {
-    // setState(() {
-    //   _loading = 
-    // });
     final audio = await _audioService.loadAudios();
     setState(() {
       _audios = audio;
@@ -95,12 +93,9 @@ class SearchScreenState extends State<SearchScreen> {
                 separatorBuilder:(context, index) => SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final audio = filteredAudios[index];
-                  return Card(
-                    child: ListTile(
-                      leading: Icon(Icons.mic, color: Colors.redAccent),
-                      title: Text(audio.audioTitle),
-                      subtitle: Text(audio.createdAt.toIso8601String()),
-                    ),
+                  return RecentActivityCard(
+                    audio: audio, 
+                    isKhmer: isKhmer
                   );
                 },
               ),
