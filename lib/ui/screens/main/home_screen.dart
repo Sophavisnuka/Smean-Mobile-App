@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/models/audio_class.dart';
+import 'package:smean_mobile_app/models/card_model.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/service/audio_service.dart';
+import 'package:smean_mobile_app/repository/audio_repository.dart';
+import 'package:smean_mobile_app/service/auth_service.dart';
+import 'package:smean_mobile_app/database/database.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/ui/widgets/profile_card.dart';
 import 'package:smean_mobile_app/ui/widgets/recent_activity_card.dart';
@@ -20,26 +22,40 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   String searchText = '';
-  final AudioService _audioService = AudioService();
-  List<AudioRecord> _audios = [];
+  late AudioRepository _audioRepo;
+  late AuthService _authService;
+  List<CardModel> _cards = [];
   bool _isFanMenuOpen = false;
   bool _showOnlyFavorites = false;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    _audioRepo = AudioRepository(db);
+    _authService = AuthService(db);
     displayAudio();
   }
 
   void displayAudio() async {
-    final audios = await _audioService.loadAudios();
+    final user = await _authService.getCurrentUser();
+    if (user == null) return;
+
+    final cards = await _audioRepo.getCardsForUser(user.id);
     setState(() {
-      _audios = audios;
+      _cards = cards;
+      _loading = false;
     });
   }
 
-  Future<void> _editTitle(AudioRecord audio) async {
-    final controller = TextEditingController(text: audio.audioTitle);
+  Future<void> _editTitle(CardModel card) async {
+    final controller = TextEditingController(text: card.cardName);
 
     final newTitle = await showDialog<String>(
       context: context,
@@ -69,17 +85,11 @@ class HomeScreenState extends State<HomeScreen> {
 
     if (newTitle == null) return;
 
-    final updateAudio = await _audioService.updateAudio(
-      newTitle,
-      audio.audioId,
-      _audios,
-    );
-    setState(() {
-      _audios = updateAudio;
-    });
+    await _audioRepo.updateCardName(card.cardId, newTitle);
+    displayAudio(); // Reload
   }
 
-  Future<void> _deleteCard(AudioRecord audio) async {
+  Future<void> _deleteCard(CardModel card) async {
     final onConfirm = await showDialog<bool>(
       context: context,
       builder: (_) => ShowConfirmDialog(
@@ -90,69 +100,25 @@ class HomeScreenState extends State<HomeScreen> {
     );
 
     if (onConfirm != true) return;
-    final removedIndex = _audios.indexWhere((a) => a.audioId == audio.audioId);
-    if (removedIndex == -1) return;
-    final removedAudio = _audios[removedIndex];
 
-    setState(() {
-      _audios.removeAt(removedIndex);
-    });
-    await _audioService.saveAudios(_audios);
+    await _audioRepo.deleteCard(card.cardId);
 
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Removed ${removedAudio.audioTitle}'),
-            const SizedBox(height: 8),
-            TweenAnimationBuilder<double>(
-              duration: const Duration(seconds: 4),
-              tween: Tween(begin: 1.0, end: 0.0),
-              builder: (context, value, child) {
-                return LinearProgressIndicator(
-                  value: value,
-                  backgroundColor: Colors.white.withOpacity(0.3),
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  minHeight: 3,
-                );
-              },
-              onEnd: () {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                }
-              },
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 4),
+        content: Text('Card deleted: ${card.cardName}'),
+        duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Undo',
-          textColor: Colors.white,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            setState(() {
-              _audios.insert(removedIndex, removedAudio);
-            });
-            _audioService.saveAudios(_audios);
-          },
-        ),
       ),
     );
+
+    displayAudio(); // Reload
   }
 
-  Future<void> _toggleFavorite(AudioRecord audio) async {
-    final updatedAudios = await _audioService.toggleFavorite(
-      audio.audioId,
-      _audios,
-    );
-    setState(() {
-      _audios = updatedAudios;
-    });
+  Future<void> _toggleFavorite(CardModel card) async {
+    await _audioRepo.toggleFavorite(card.cardId, !card.isFavorite);
+    displayAudio(); // Reload
   }
 
   @override
@@ -262,7 +228,9 @@ class HomeScreenState extends State<HomeScreen> {
               ],
             ),
             SizedBox(height: 15),
-            _audios.isEmpty
+            _loading
+                ? Center(child: CircularProgressIndicator())
+                : _cards.isEmpty
                 ? Center(
                     child: Text(
                       'No Recent Records',
@@ -270,11 +238,11 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                   )
                 : () {
-                    final displayAudios = _showOnlyFavorites
-                        ? _audios.where((audio) => audio.isFavorite).toList()
-                        : _audios;
+                    final displayCards = _showOnlyFavorites
+                        ? _cards.where((card) => card.isFavorite).toList()
+                        : _cards;
 
-                    if (displayAudios.isEmpty) {
+                    if (displayCards.isEmpty) {
                       return Center(
                         child: Text(
                           isKhmer
@@ -289,18 +257,18 @@ class HomeScreenState extends State<HomeScreen> {
                     }
 
                     return ListView.separated(
-                      itemCount: displayAudios.length,
+                      itemCount: displayCards.length,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       separatorBuilder: (_, _) => SizedBox(height: 15),
                       itemBuilder: (context, index) {
-                        final audio = displayAudios[index];
+                        final card = displayCards[index];
                         return RecentActivityCard(
                           isKhmer: isKhmer,
-                          audio: audio,
-                          onEdit: () => _editTitle(audio),
-                          onDelete: () => _deleteCard(audio),
-                          onFavoriteToggle: () => _toggleFavorite(audio),
+                          card: card,
+                          onEdit: () => _editTitle(card),
+                          onDelete: () => _deleteCard(card),
+                          onFavoriteToggle: () => _toggleFavorite(card),
                         );
                       },
                     );

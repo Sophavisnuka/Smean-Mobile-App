@@ -34,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen>
       curve: Curves.easeInOut,
     );
     _animationController.forward();
-    _autoRedirectIfLoggedIn();
   }
 
   @override
@@ -42,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen>
     super.didChangeDependencies();
     final db = Provider.of<AppDatabase>(context, listen: false);
     _auth = AuthService(db);
+    _autoRedirectIfLoggedIn();
   }
 
   Future<void> _autoRedirectIfLoggedIn() async {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/models/audio_class.dart';
+import 'package:smean_mobile_app/models/card_model.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/service/audio_service.dart';
+import 'package:smean_mobile_app/repository/audio_repository.dart';
+import 'package:smean_mobile_app/service/auth_service.dart';
+import 'package:smean_mobile_app/database/database.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/ui/widgets/recent_activity_card.dart';
 
@@ -15,20 +17,34 @@ class SearchScreen extends StatefulWidget {
 
 class SearchScreenState extends State<SearchScreen> {
   String searchText = '';
-  List<AudioRecord> _audios = [];
-  final AudioService _audioService = AudioService();
+  List<CardModel> _cards = [];
+  late AudioRepository _audioRepo;
+  late AuthService _authService;
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    _audioRepo = AudioRepository(db);
+    _authService = AuthService(db);
     reloadAudios(); // initial load
   }
 
   Future<void> reloadAudios() async {
-    final audio = await _audioService.loadAudios();
+    final user = await _authService.getCurrentUser();
+    if (user == null) return;
+
+    final cards = searchText.isEmpty
+        ? await _audioRepo.getCardsForUser(user.id)
+        : await _audioRepo.searchCards(user.id, searchText);
     setState(() {
-      _audios = audio;
+      _cards = cards;
       _loading = false;
     });
   }
@@ -37,14 +53,8 @@ class SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
-    // final audios = _audios;
 
-    final filteredAudios = _audios
-        .where(
-          (audio) =>
-              audio.audioTitle.toLowerCase().contains(searchText.toLowerCase()),
-        )
-        .toList();
+    final filteredCards = _cards;
 
     return Scaffold(
       appBar: AppBar(
@@ -66,6 +76,7 @@ class SearchScreenState extends State<SearchScreen> {
                 setState(() {
                   searchText = value;
                 });
+                reloadAudios();
               },
               decoration: InputDecoration(
                 hintText: 'Search audio...',
@@ -87,7 +98,7 @@ class SearchScreenState extends State<SearchScreen> {
             Expanded(
               child: _loading
                   ? Center(child: CircularProgressIndicator())
-                  : filteredAudios.isEmpty
+                  : filteredCards.isEmpty
                   ? Center(
                       child: Text(
                         'No result found',
@@ -95,14 +106,14 @@ class SearchScreenState extends State<SearchScreen> {
                       ),
                     )
                   : ListView.separated(
-                      itemCount: filteredAudios.length,
+                      itemCount: filteredCards.length,
                       separatorBuilder: (context, index) =>
                           SizedBox(height: 10),
                       itemBuilder: (context, index) {
-                        final audio = filteredAudios[index];
+                        final card = filteredCards[index];
                         return RecentActivityCard(
-                          audio: audio,
                           isKhmer: isKhmer,
+                          card: card,
                           searchQuery: searchText,
                         );
                       },

@@ -219,7 +219,10 @@ class AudioRepository {
 
   Future<Transcript?> _getTranscriptForCard(String cardId) async {
     final query = db.select(db.transcripts)
-      ..where((transcript) => transcript.cardId.equals(cardId));
-    return await query.getSingleOrNull();
+      ..where((transcript) => transcript.cardId.equals(cardId))
+      ..orderBy([(t) => drift.OrderingTerm.desc(t.createdAt)])
+      ..limit(1);
+    final results = await query.get();
+    return results.isEmpty ? null : results.first;
   }
 }
