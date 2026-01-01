@@ -60,7 +60,9 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.lock),
-              title: Text(isKhmer ? 'ផ្លាស់ប្តូរពាក្យសម្ងាត់' : 'Change Password'),
+              title: Text(
+                isKhmer ? 'ផ្លាស់ប្តូរពាក្យសម្ងាត់' : 'Change Password',
+              ),
               onTap: () {},
             ),
             ListTile(

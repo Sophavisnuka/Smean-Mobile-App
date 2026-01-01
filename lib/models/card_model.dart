@@ -6,13 +6,13 @@ class CardModel {
   final bool isFavorite;
   final DateTime createdAt;
   final DateTime updatedAt;
-  
+
   // Audio information (from audios table)
   final String? audioId;
   final String? audioFilePath;
   final String? audioSourceType; // 'recorded' or 'uploaded'
   final int? audioDuration; // seconds
-  
+
   // Transcription information (from transcripts table)
   final String? transcriptId;
   final String? transcriptionText;
@@ -32,11 +32,12 @@ class CardModel {
     this.transcriptionText,
   });
 
-  Duration? get audioDurationObj => 
+  Duration? get audioDurationObj =>
       audioDuration != null ? Duration(seconds: audioDuration!) : null;
 
   bool get hasAudio => audioFilePath != null;
-  bool get hasTranscript => transcriptionText != null && transcriptionText!.isNotEmpty;
+  bool get hasTranscript =>
+      transcriptionText != null && transcriptionText!.isNotEmpty;
   bool get isRecorded => audioSourceType == 'recorded';
   bool get isUploaded => audioSourceType == 'uploaded';
 

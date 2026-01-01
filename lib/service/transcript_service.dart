@@ -11,13 +11,13 @@ class TranscriptService {
 
   String _mockText(String? title) {
     final base = (title == null || title.trim().isEmpty)
-      ? 'This is a mock transcript generated for demo purposes.'
-      : 'This is a mock transcript for "$title".';
+        ? 'This is a mock transcript generated for demo purposes.'
+        : 'This is a mock transcript for "$title".';
 
     return '$base\n\n'
-      '• Key point 1: This transcription is not accurate yet.\n'
-      '• Key point 2: It demonstrates how the UI will show text.\n'
-      '• Key point 3: Later we can replace this with real speech-to-text.';
+        '• Key point 1: This transcription is not accurate yet.\n'
+        '• Key point 2: It demonstrates how the UI will show text.\n'
+        '• Key point 3: Later we can replace this with real speech-to-text.';
   }
 
   /// Generate mock transcription for a card
@@ -28,7 +28,7 @@ class TranscriptService {
   }) async {
     // Simulate processing delay (1-3 seconds)
     await Future.delayed(Duration(seconds: 2));
-    
+
     final text = _mockText(cardName);
     final transcriptId = uuid.v4();
 

@@ -12,33 +12,39 @@ class AuthRepository {
   /// Get all users from the database
   Future<List<AppUser>> loadUsers() async {
     final users = await db.select(db.users).get();
-    return users.map((user) => AppUser(
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      passwordHash: user.passwordHash,
-      createdAt: user.createdAt,
-    )).toList();
+    return users
+        .map(
+          (user) => AppUser(
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            passwordHash: user.passwordHash,
+            createdAt: user.createdAt,
+          ),
+        )
+        .toList();
   }
 
   /// Create a new user in the database
   Future<void> createUser(AppUser user) async {
-    await db.into(db.users).insert(
-      UsersCompanion(
-        id: drift.Value(user.id),
-        name: drift.Value(user.name),
-        email: drift.Value(user.email),
-        passwordHash: drift.Value(user.passwordHash),
-        createdAt: drift.Value(user.createdAt),
-      ),
-    );
+    await db
+        .into(db.users)
+        .insert(
+          UsersCompanion(
+            id: drift.Value(user.id),
+            name: drift.Value(user.name),
+            email: drift.Value(user.email),
+            passwordHash: drift.Value(user.passwordHash),
+            createdAt: drift.Value(user.createdAt),
+          ),
+        );
   }
 
   /// Get user by email
   Future<AppUser?> getUserByEmail(String email) async {
     final query = db.select(db.users)
       ..where((u) => u.email.equals(email.toLowerCase()));
-    
+
     final user = await query.getSingleOrNull();
     if (user == null) return null;
 
@@ -53,9 +59,8 @@ class AuthRepository {
 
   /// Get user by ID
   Future<AppUser?> getUserById(String id) async {
-    final query = db.select(db.users)
-      ..where((u) => u.id.equals(id));
-    
+    final query = db.select(db.users)..where((u) => u.id.equals(id));
+
     final user = await query.getSingleOrNull();
     if (user == null) return null;
 
