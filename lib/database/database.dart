@@ -25,7 +25,8 @@ class Users extends Table {
 /// Cards table - Main entity representing a transcription card
 class Cards extends Table {
   TextColumn get id => text()();
-  TextColumn get userId => text().references(Users, #id, onDelete: KeyAction.cascade)();
+  TextColumn get userId =>
+      text().references(Users, #id, onDelete: KeyAction.cascade)();
   TextColumn get cardName => text()();
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
@@ -38,7 +39,8 @@ class Cards extends Table {
 /// Audios table - Audio files linked to cards (recorded or uploaded)
 class Audios extends Table {
   TextColumn get id => text()();
-  TextColumn get cardId => text().references(Cards, #id, onDelete: KeyAction.cascade)();
+  TextColumn get cardId =>
+      text().references(Cards, #id, onDelete: KeyAction.cascade)();
   TextColumn get filePath => text()(); // Local path to audio file
   TextColumn get sourceType => text()(); // 'recorded' or 'uploaded'
   IntColumn get duration => integer()(); // Duration in seconds
@@ -51,8 +53,10 @@ class Audios extends Table {
 /// Transcripts table - Transcription text linked to cards
 class Transcripts extends Table {
   TextColumn get id => text()();
-  TextColumn get cardId => text().references(Cards, #id, onDelete: KeyAction.cascade)();
-  TextColumn get transcriptionText => text()(); // The transcription text (editable)
+  TextColumn get cardId =>
+      text().references(Cards, #id, onDelete: KeyAction.cascade)();
+  TextColumn get transcriptionText =>
+      text()(); // The transcription text (editable)
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -78,9 +82,7 @@ class AppDatabase extends _$AppDatabase {
     return driftDatabase(
       name: 'smean_app_db',
       // Use native SQLite on mobile/desktop, IndexedDB on web
-      native: DriftNativeOptions(
-        shareAcrossIsolates: true,
-      ),
+      native: DriftNativeOptions(shareAcrossIsolates: true),
     );
   }
 }

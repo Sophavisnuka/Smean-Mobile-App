@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
+import 'package:smean_mobile_app/database/database.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -15,7 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
 
-  final _auth = AuthService();
+  late AuthService _auth;
   bool _loading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -34,6 +36,13 @@ class _RegisterScreenState extends State<RegisterScreen>
       curve: Curves.easeInOut,
     );
     _animationController.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    _auth = AuthService(db);
   }
 
   Future<void> _handleRegister() async {

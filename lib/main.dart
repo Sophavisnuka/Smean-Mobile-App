@@ -3,20 +3,26 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
+import 'package:smean_mobile_app/database/database.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/register_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/main_screen.dart';
 import 'package:smean_mobile_app/ui/screens/welcome_screen/welcome_screen.dart';
 
 void main() {
+  // Initialize the database
+  final database = AppDatabase();
+
   runApp(
     MultiProvider(
       providers: [
+        // Provide the database instance globally
+        Provider<AppDatabase>.value(value: database),
         ChangeNotifierProvider(create: (context) => LanguageProvider()),
       ],
       // for device preview
       // child: DevicePreview(builder: (context) => SmeanApp()), // For device preview
-      child: SmeanApp(),
+      child: const SmeanApp(),
     ),
   );
 }

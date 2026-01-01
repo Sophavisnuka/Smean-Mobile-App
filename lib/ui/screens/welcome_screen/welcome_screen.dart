@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'intro_screen.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/main_screen.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
+import 'package:smean_mobile_app/database/database.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -22,7 +24,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   // Background loading during splash animation
   Future<void> _initializeApp() async {
-    final authService = AuthService();
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    final authService = AuthService(db);
 
     // Run all initialization tasks in parallel
     final results = await Future.wait([

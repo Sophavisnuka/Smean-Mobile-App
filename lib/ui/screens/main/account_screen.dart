@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
+import 'package:smean_mobile_app/database/database.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/ui/widgets/profile_card.dart';
 
@@ -13,7 +14,14 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  final _auth = AuthService();
+  late AuthService _auth;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    _auth = AuthService(db);
+  }
 
   Future<void> _handleLogout() async {
     await _auth.logout();

@@ -1,25 +1,74 @@
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:drift/drift.dart' as drift;
 import '../models/user_class.dart';
+import '../database/database.dart';
 
 class AuthRepository {
-  static const usersKey = 'users_json';
+  final AppDatabase db;
   static const currentUserKey = 'current_user_id';
 
+  AuthRepository(this.db);
+
+  /// Get all users from the database
   Future<List<AppUser>> loadUsers() async {
-    final sp = await SharedPreferences.getInstance();
-    final raw = sp.getString(usersKey);
-    if (raw == null || raw.trim().isEmpty) return [];
-    final list = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
-    return list.map((e) => AppUser.fromJson(e)).toList();
+    final users = await db.select(db.users).get();
+    return users.map((user) => AppUser(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      createdAt: user.createdAt,
+    )).toList();
   }
 
-  Future<void> saveUsers(List<AppUser> users) async {
-    final sp = await SharedPreferences.getInstance();
-    final raw = jsonEncode(users.map((u) => u.toJson()).toList());
-    await sp.setString(usersKey, raw);
+  /// Create a new user in the database
+  Future<void> createUser(AppUser user) async {
+    await db.into(db.users).insert(
+      UsersCompanion(
+        id: drift.Value(user.id),
+        name: drift.Value(user.name),
+        email: drift.Value(user.email),
+        passwordHash: drift.Value(user.passwordHash),
+        createdAt: drift.Value(user.createdAt),
+      ),
+    );
   }
 
+  /// Get user by email
+  Future<AppUser?> getUserByEmail(String email) async {
+    final query = db.select(db.users)
+      ..where((u) => u.email.equals(email.toLowerCase()));
+    
+    final user = await query.getSingleOrNull();
+    if (user == null) return null;
+
+    return AppUser(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      createdAt: user.createdAt,
+    );
+  }
+
+  /// Get user by ID
+  Future<AppUser?> getUserById(String id) async {
+    final query = db.select(db.users)
+      ..where((u) => u.id.equals(id));
+    
+    final user = await query.getSingleOrNull();
+    if (user == null) return null;
+
+    return AppUser(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      createdAt: user.createdAt,
+    );
+  }
+
+  /// Store current user ID in SharedPreferences (lightweight session management)
   Future<String?> getCurrentUserId() async {
     final sp = await SharedPreferences.getInstance();
     return sp.getString(currentUserKey);
