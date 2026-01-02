@@ -77,21 +77,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Future<void> _preloadData() async {
-    // TODO: Add your background tasks here
-    // Examples:
-    // - Check authentication status
-    // - Fetch initial data from API
-    // - Load cached data
-    // - Initialize services
-    // - Preload images or assets
-
-    // Example placeholder:
+    // Preload data and initialize services
     await Future.delayed(Duration(milliseconds: 500));
-
-    // You can add more initialization here later:
-    // await FirebaseService.initialize();
-    // await AudioService.initialize();
-    // etc.
   }
 
   @override

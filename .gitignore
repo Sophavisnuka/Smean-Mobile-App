@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+web/drift_worker.dart.js.deps
+web/drift_worker.dart.js.map
+web/drift_worker.dart
