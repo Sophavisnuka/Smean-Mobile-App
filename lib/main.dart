@@ -27,7 +27,9 @@ void main() async {
         ),
       ],
       // for device preview
-      child: DevicePreview(builder: (context) => SmeanApp()), // For device preview
+      child: DevicePreview(
+        builder: (context) => SmeanApp(),
+      ), // For device preview
       // child: const SmeanApp(),
     ),
   );
