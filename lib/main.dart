@@ -1,28 +1,32 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/constants/app_colors.dart';
-import 'package:smean_mobile_app/providers/language_provider.dart';
-import 'package:smean_mobile_app/database/database.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
+import 'package:smean_mobile_app/core/providers/language_provider.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/register_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/main_screen.dart';
 import 'package:smean_mobile_app/ui/screens/welcome_screen/welcome_screen.dart';
 
-void main() {
-  // Initialize the database
-  final database = AppDatabase();
+void main() async {
+  // Ensure Flutter bindings are initialized first
+  WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
     MultiProvider(
       providers: [
-        // Provide the database instance globally
-        Provider<AppDatabase>.value(value: database),
+        // Provide the database instance globally (lazy creation)
+        Provider<AppDatabase>(
+          create: (_) => AppDatabase(),
+          dispose: (_, db) => db.close(),
+        ),
         ChangeNotifierProvider(create: (context) => LanguageProvider()),
       ],
       // for device preview
-      // child: DevicePreview(builder: (context) => SmeanApp()), // For device preview
-      child: const SmeanApp(),
+      child: DevicePreview(builder: (context) => SmeanApp()), // For device preview
+      // child: const SmeanApp(),
     ),
   );
 }

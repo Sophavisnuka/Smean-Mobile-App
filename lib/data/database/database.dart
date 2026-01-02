@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-
 part 'database.g.dart';
 
 // ====================
@@ -78,8 +77,7 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _openConnection() {
     return driftDatabase(
       name: 'smean_app_db',
-      // Use native SQLite on mobile/desktop, IndexedDB on web
-      native: DriftNativeOptions(shareAcrossIsolates: true),
+      native: const DriftNativeOptions(shareAcrossIsolates: true),
     );
   }
 }

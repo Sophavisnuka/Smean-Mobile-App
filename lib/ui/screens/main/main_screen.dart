@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smean_mobile_app/constants/app_colors.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/ui/screens/main/home_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/search_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/record_screen.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import 'package:smean_mobile_app/models/audio_class.dart';
+import 'package:smean_mobile_app/data/models/audio_class.dart';
 
 class CreateAudioScreen extends StatefulWidget {
   const CreateAudioScreen({super.key});
