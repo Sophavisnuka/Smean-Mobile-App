@@ -1,15 +1,8 @@
 import 'package:drift/drift.dart';
-import 'package:drift/wasm.dart';
+import 'package:drift/web.dart';
 
 QueryExecutor connect(String dbName) {
-  return LazyDatabase(() async {
-    // Use the simple helper method that handles everything
-    final db = await WasmDatabase.open(
-      databaseName: dbName,
-      sqlite3Uri: Uri.parse('sqlite3.wasm'),
-      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
-    );
-
-    return db.resolvedExecutor;
-  });
+  // Use WebDatabase with sql.js backend (loaded via CDN in index.html)
+  // This provides SQLite functionality on web browsers
+  return WebDatabase(dbName, logStatements: true);
 }
