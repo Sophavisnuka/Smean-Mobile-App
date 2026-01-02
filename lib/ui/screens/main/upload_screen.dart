@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/constants/app_colors.dart';
-import 'package:smean_mobile_app/providers/language_provider.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
+import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
 class UploadScreen extends StatefulWidget {

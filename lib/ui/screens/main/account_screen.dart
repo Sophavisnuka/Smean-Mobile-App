@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/providers/language_provider.dart';
+import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
-import 'package:smean_mobile_app/database/database.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/ui/widgets/profile_card.dart';
 

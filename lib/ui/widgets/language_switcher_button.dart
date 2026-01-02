@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/language_provider.dart';
+import 'package:smean_mobile_app/core/providers/language_provider.dart';
 
 class LanguageSwitcherButton extends StatelessWidget {
   const LanguageSwitcherButton({super.key});

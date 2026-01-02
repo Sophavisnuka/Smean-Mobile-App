@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
-import 'package:smean_mobile_app/database/database.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
