@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
-import '../database/database.dart';
+import '../../data/database/database.dart';
 
 class LanguageProvider extends ChangeNotifier {
   final AppDatabase db;

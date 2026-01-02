@@ -22,7 +22,9 @@ void main() async {
           create: (_) => AppDatabase(),
           dispose: (_, db) => db.close(),
         ),
-        ChangeNotifierProvider(create: (context) => LanguageProvider()),
+        ChangeNotifierProvider(
+          create: (context) => LanguageProvider(context.read<AppDatabase>()),
+        ),
       ],
       // for device preview
       child: DevicePreview(builder: (context) => SmeanApp()), // For device preview
