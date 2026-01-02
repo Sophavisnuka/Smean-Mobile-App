@@ -43,6 +43,13 @@ class _MainScreenState extends State<MainScreen> {
     _switchTab(0);
   }
 
+  void _handleUploadComplete() {
+    // Reload home screen data
+    _homeKey.currentState?.displayAudio();
+    // Switch back to home
+    _switchTab(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +59,7 @@ class _MainScreenState extends State<MainScreen> {
           HomeScreen(key: _homeKey, onSwitchTab: _switchTab),
           SearchScreen(key: _searchKey),
           RecordScreen(onRecordingSaved: _handleRecordingSaved),
-          UploadScreen(),
+          UploadScreen(onUploadComplete: _handleUploadComplete),
           AccountScreen(),
         ],
       ),
