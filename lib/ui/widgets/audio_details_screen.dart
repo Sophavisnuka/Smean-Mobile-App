@@ -1,15 +1,17 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
-import 'package:smean_mobile_app/models/audio_class.dart';
+import 'package:smean_mobile_app/models/card_model.dart';
 import 'package:smean_mobile_app/service/transcript_service.dart';
+import 'package:smean_mobile_app/database/database.dart';
 import 'package:smean_mobile_app/utils/formatting.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AudioDetailsScreen extends StatefulWidget {
-  final AudioRecord audios;
-  const AudioDetailsScreen({super.key, required this.audios});
+  final CardModel card;
+  const AudioDetailsScreen({super.key, required this.card});
 
   @override
   State<AudioDetailsScreen> createState() => _AudioDetailsScreenState();
@@ -17,7 +19,7 @@ class AudioDetailsScreen extends StatefulWidget {
 
 class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
   final AudioPlayer _player = AudioPlayer();
-  final TranscriptService transcriptService = TranscriptService();
+  late TranscriptService _transcriptService;
   bool isPlaying = false;
   Duration position = Duration.zero;
   Duration duration = Duration.zero;
@@ -27,6 +29,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    transcriptText = widget.card.transcriptionText;
 
     _player.onPlayerStateChanged.listen((s) {
       if (!mounted) return;
@@ -44,8 +47,15 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    _transcriptService = TranscriptService(db);
+  }
+
   Future<void> _togglePlay() async {
-    final source = widget.audios.filePath;
+    final source = widget.card.audioFilePath ?? '';
 
     if (isPlaying) {
       await _player.pause();
@@ -74,15 +84,21 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
     });
 
     try {
-      final t = await transcriptService.generateMock(
-        widget.audios.audioId,
-        widget.audios.audioTitle,
+      await _transcriptService.generateMockTranscription(
+        cardId: widget.card.cardId,
+        cardName: widget.card.cardName,
+      );
+
+      // Reload transcript
+      final transcript = await _transcriptService.getTranscriptForCard(
+        widget.card.cardId,
       );
 
       if (!mounted) return;
 
       setState(() {
-        transcriptText = t?.text ?? 'No transcript generated.';
+        transcriptText =
+            transcript?.transcriptionText ?? 'No transcript generated.';
         isGenerating = false;
       });
     } catch (e) {
@@ -107,7 +123,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
   Widget build(BuildContext context) {
     final formattedDate = DateFormat(
       'MMM dd, yyyy · hh:mm a',
-    ).format(widget.audios.createdAt);
+    ).format(widget.card.createdAt);
     final maxSeconds = (duration.inSeconds > 0 ? duration.inSeconds : 1)
         .toDouble();
     final valueSeconds = position.inSeconds.toDouble();
@@ -200,7 +216,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
               children: [
                 Flexible(
                   child: Text(
-                    widget.audios.audioTitle,
+                    widget.card.cardName,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,

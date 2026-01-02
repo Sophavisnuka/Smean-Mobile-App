@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
-import 'package:smean_mobile_app/models/audio_class.dart';
+import 'package:smean_mobile_app/models/card_model.dart';
 import 'package:smean_mobile_app/ui/widgets/audio_details_screen.dart';
 
 class RecentActivityCard extends StatelessWidget {
-  final AudioRecord audio;
+  final CardModel card;
 
   final bool isKhmer;
   final VoidCallback? onEdit;
@@ -15,7 +15,7 @@ class RecentActivityCard extends StatelessWidget {
 
   const RecentActivityCard({
     super.key,
-    required this.audio,
+    required this.card,
     required this.isKhmer,
     this.onEdit,
     this.onDelete,
@@ -49,7 +49,7 @@ class RecentActivityCard extends StatelessWidget {
             fontWeight: FontWeight.w600,
             fontSize: 16,
             backgroundColor: isHighlighted
-                ? Colors.yellow.withOpacity(0.5)
+                ? Colors.yellow.withValues(alpha: 0.5)
                 : Colors.transparent,
             color: Colors.black87,
           ),
@@ -62,8 +62,8 @@ class RecentActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final createdAt = audio.createdAt;
-    final title = audio.audioTitle;
+    final createdAt = card.createdAt;
+    final title = card.cardName;
     // Format the date as you like
     String formattedDate = isKhmer
         ? DateFormat('dd/MM/yyyy · HH:mm').format(createdAt)
@@ -76,7 +76,7 @@ class RecentActivityCard extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => AudioDetailsScreen(audios: audio),
+              builder: (context) => AudioDetailsScreen(card: card),
             ),
           );
         },
@@ -122,10 +122,10 @@ class RecentActivityCard extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Icon(
-                                audio.isFavorite
+                                card.isFavorite
                                     ? Icons.bookmark
                                     : Icons.bookmark_border,
-                                color: audio.isFavorite
+                                color: card.isFavorite
                                     ? Colors.amber
                                     : Colors.grey,
                                 size: 22,

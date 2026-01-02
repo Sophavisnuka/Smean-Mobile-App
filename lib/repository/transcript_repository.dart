@@ -1,32 +1,69 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smean_mobile_app/models/transcript_class.dart';
-import 'package:smean_mobile_app/service/auth_service.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:smean_mobile_app/database/database.dart';
 
+/// Repository for managing Transcriptions linked to Cards
 class TranscriptRepository {
-  static Future<String> _userKey() async {
-    final user = await AuthService().getCurrentUser();
-    if (user == null) throw Exception('No logged in user');
-    return 'transcripts_json_${user.id}';
+  final AppDatabase db;
+
+  TranscriptRepository(this.db);
+
+  /// Create a transcript for a card
+  Future<String> createTranscript({
+    required String transcriptId,
+    required String cardId,
+    required String text,
+  }) async {
+    final now = DateTime.now();
+
+    await db
+        .into(db.transcripts)
+        .insert(
+          TranscriptsCompanion(
+            id: drift.Value(transcriptId),
+            cardId: drift.Value(cardId),
+            transcriptionText: drift.Value(text),
+            createdAt: drift.Value(now),
+            updatedAt: drift.Value(now),
+          ),
+        );
+
+    return transcriptId;
   }
 
-  static Future<List<Transcript>> getTranscripts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = await _userKey();
+  /// Get transcript for a specific card
+  Future<Transcript?> getTranscriptByCardId(String cardId) async {
+    final query = db.select(db.transcripts)
+      ..where((transcript) => transcript.cardId.equals(cardId));
 
-    final raw = prefs.getString(key);
-    if (raw == null || raw.trim().isEmpty) return [];
-
-    final data = jsonDecode(raw) as Map<String, dynamic>;
-    final list = (data['transcripts'] as List<dynamic>? ?? []);
-    return list.map((e) => Transcript.fromJson(e as Map<String, dynamic>)).toList();
+    return await query.getSingleOrNull();
   }
 
-  static Future<void> saveTranscripts(List<Transcript> transcripts) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = await _userKey();
+  /// Update transcript text
+  Future<void> updateTranscriptText(String transcriptId, String newText) async {
+    await (db.update(
+      db.transcripts,
+    )..where((transcript) => transcript.id.equals(transcriptId))).write(
+      TranscriptsCompanion(
+        transcriptionText: drift.Value(newText),
+        updatedAt: drift.Value(DateTime.now()),
+      ),
+    );
+  }
 
-    final map = {'transcripts': transcripts.map((t) => t.toJson()).toList()};
-    await prefs.setString(key, jsonEncode(map));
+  /// Delete transcript
+  Future<void> deleteTranscript(String transcriptId) async {
+    await (db.delete(
+      db.transcripts,
+    )..where((transcript) => transcript.id.equals(transcriptId))).go();
+  }
+
+  /// Get all transcripts for a user (via their cards)
+  Future<List<Transcript>> getTranscriptsForUser(String userId) async {
+    final query = db.select(db.transcripts).join([
+      drift.innerJoin(db.cards, db.cards.id.equalsExp(db.transcripts.cardId)),
+    ])..where(db.cards.userId.equals(userId));
+
+    final results = await query.get();
+    return results.map((row) => row.readTable(db.transcripts)).toList();
   }
 }

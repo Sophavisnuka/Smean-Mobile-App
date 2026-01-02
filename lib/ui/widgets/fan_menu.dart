@@ -156,7 +156,7 @@ class _FanMenuState extends State<FanMenu> with SingleTickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -181,7 +181,9 @@ class _FanMenuState extends State<FanMenu> with SingleTickerProviderStateMixin {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: (item.color ?? AppColors.primary).withOpacity(0.4),
+                    color: (item.color ?? AppColors.primary).withValues(
+                      alpha: 0.4,
+                    ),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

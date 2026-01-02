@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/constants/app_colors.dart';
-import 'package:smean_mobile_app/models/audio_class.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/service/record_audio_service.dart';
-import 'package:smean_mobile_app/service/audio_service.dart';
+import 'package:smean_mobile_app/repository/audio_repository.dart';
+import 'package:smean_mobile_app/service/transcript_service.dart';
+import 'package:smean_mobile_app/service/auth_service.dart';
+import 'package:smean_mobile_app/database/database.dart';
 import 'package:smean_mobile_app/utils/formatting.dart';
 import 'package:uuid/uuid.dart';
 
@@ -22,7 +24,18 @@ class RecordScreen extends StatefulWidget {
 
 class _RecordScreenState extends State<RecordScreen> {
   late RecordAudioService _audioService;
-  final AudioService _audioSaveService = AudioService();
+  late AudioRepository _audioRepo;
+  late TranscriptService _transcriptService;
+  late AuthService _authService;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    _audioRepo = AudioRepository(db);
+    _transcriptService = TranscriptService(db);
+    _authService = AuthService(db);
+  }
 
   Future<void> _saveToHome() async {
     if (_audioService.recordedFilePath == null) return;
@@ -57,16 +70,38 @@ class _RecordScreenState extends State<RecordScreen> {
 
     if (title == null) return;
 
-    final record = AudioRecord(
-      audioId: uuid.v4(),
-      filePath: _audioService.recordedFilePath!,
-      audioTitle: title,
-      createdAt: DateTime.now(),
-      duration: _audioService.totalDuration.inSeconds,
+    final user = await _authService.getCurrentUser();
+    if (user == null) return;
+
+    final cardId = uuid.v4();
+    final audioId = uuid.v4();
+
+    // Create card with audio
+    await _audioRepo.createCardWithAudio(
+      userId: user.id,
+      cardName: title,
+      audioFilePath: _audioService.recordedFilePath!,
+      sourceType: 'recorded',
+      audioDuration: _audioService.totalDuration.inSeconds,
+      cardId: cardId,
+      audioId: audioId,
     );
 
-    // Save to audio service
-    await _audioSaveService.addAudio(record);
+    if (!mounted) return;
+
+    // Show generating message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Generating transcription...'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+
+    // Generate mock transcription (2 second delay)
+    await _transcriptService.generateMockTranscription(
+      cardId: cardId,
+      cardName: title,
+    );
 
     if (!mounted) return;
 
@@ -74,13 +109,15 @@ class _RecordScreenState extends State<RecordScreen> {
     await _audioService.deleteRecording();
 
     // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Recording saved: $title'),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Recording saved: $title'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
 
     // Call callback to switch back to home and reload
     widget.onRecordingSaved?.call();
