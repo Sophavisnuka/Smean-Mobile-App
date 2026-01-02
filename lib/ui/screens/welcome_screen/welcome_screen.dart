@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'intro_screen.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/main_screen.dart';
@@ -69,9 +68,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Future<bool> _checkIfFirstTimeUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool hasSeenIntro = prefs.getBool('hasSeenIntro') ?? false;
-    return !hasSeenIntro; // Return true if first time (hasn't seen intro)
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    final session = await (db.select(
+      db.appSession,
+    )..limit(1)).getSingleOrNull();
+    // If no session exists, it's first time user
+    return session == null;
   }
 
   Future<void> _preloadData() async {

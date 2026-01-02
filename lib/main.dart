@@ -18,7 +18,7 @@ void main() {
       providers: [
         // Provide the database instance globally
         Provider<AppDatabase>.value(value: database),
-        ChangeNotifierProvider(create: (context) => LanguageProvider()),
+        ChangeNotifierProvider(create: (context) => LanguageProvider(database)),
       ],
       // for device preview
       // child: DevicePreview(builder: (context) => SmeanApp()), // For device preview

@@ -3,6 +3,327 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $AppSessionTable extends AppSession
+    with TableInfo<$AppSessionTable, AppSessionData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AppSessionTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _currentUserIdMeta = const VerificationMeta(
+    'currentUserId',
+  );
+  @override
+  late final GeneratedColumn<String> currentUserId = GeneratedColumn<String>(
+    'current_user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _languageCodeMeta = const VerificationMeta(
+    'languageCode',
+  );
+  @override
+  late final GeneratedColumn<String> languageCode = GeneratedColumn<String>(
+    'language_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en'),
+  );
+  static const VerificationMeta _lastUpdatedMeta = const VerificationMeta(
+    'lastUpdated',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+    'last_updated',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    currentUserId,
+    languageCode,
+    lastUpdated,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'app_session';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AppSessionData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('current_user_id')) {
+      context.handle(
+        _currentUserIdMeta,
+        currentUserId.isAcceptableOrUnknown(
+          data['current_user_id']!,
+          _currentUserIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('language_code')) {
+      context.handle(
+        _languageCodeMeta,
+        languageCode.isAcceptableOrUnknown(
+          data['language_code']!,
+          _languageCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+        _lastUpdatedMeta,
+        lastUpdated.isAcceptableOrUnknown(
+          data['last_updated']!,
+          _lastUpdatedMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AppSessionData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AppSessionData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      currentUserId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}current_user_id'],
+      ),
+      languageCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language_code'],
+      )!,
+      lastUpdated: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_updated'],
+      )!,
+    );
+  }
+
+  @override
+  $AppSessionTable createAlias(String alias) {
+    return $AppSessionTable(attachedDatabase, alias);
+  }
+}
+
+class AppSessionData extends DataClass implements Insertable<AppSessionData> {
+  final int id;
+  final String? currentUserId;
+  final String languageCode;
+  final DateTime lastUpdated;
+  const AppSessionData({
+    required this.id,
+    this.currentUserId,
+    required this.languageCode,
+    required this.lastUpdated,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || currentUserId != null) {
+      map['current_user_id'] = Variable<String>(currentUserId);
+    }
+    map['language_code'] = Variable<String>(languageCode);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
+    return map;
+  }
+
+  AppSessionCompanion toCompanion(bool nullToAbsent) {
+    return AppSessionCompanion(
+      id: Value(id),
+      currentUserId: currentUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currentUserId),
+      languageCode: Value(languageCode),
+      lastUpdated: Value(lastUpdated),
+    );
+  }
+
+  factory AppSessionData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AppSessionData(
+      id: serializer.fromJson<int>(json['id']),
+      currentUserId: serializer.fromJson<String?>(json['currentUserId']),
+      languageCode: serializer.fromJson<String>(json['languageCode']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'currentUserId': serializer.toJson<String?>(currentUserId),
+      'languageCode': serializer.toJson<String>(languageCode),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
+    };
+  }
+
+  AppSessionData copyWith({
+    int? id,
+    Value<String?> currentUserId = const Value.absent(),
+    String? languageCode,
+    DateTime? lastUpdated,
+  }) => AppSessionData(
+    id: id ?? this.id,
+    currentUserId: currentUserId.present
+        ? currentUserId.value
+        : this.currentUserId,
+    languageCode: languageCode ?? this.languageCode,
+    lastUpdated: lastUpdated ?? this.lastUpdated,
+  );
+  AppSessionData copyWithCompanion(AppSessionCompanion data) {
+    return AppSessionData(
+      id: data.id.present ? data.id.value : this.id,
+      currentUserId: data.currentUserId.present
+          ? data.currentUserId.value
+          : this.currentUserId,
+      languageCode: data.languageCode.present
+          ? data.languageCode.value
+          : this.languageCode,
+      lastUpdated: data.lastUpdated.present
+          ? data.lastUpdated.value
+          : this.lastUpdated,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppSessionData(')
+          ..write('id: $id, ')
+          ..write('currentUserId: $currentUserId, ')
+          ..write('languageCode: $languageCode, ')
+          ..write('lastUpdated: $lastUpdated')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, currentUserId, languageCode, lastUpdated);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AppSessionData &&
+          other.id == this.id &&
+          other.currentUserId == this.currentUserId &&
+          other.languageCode == this.languageCode &&
+          other.lastUpdated == this.lastUpdated);
+}
+
+class AppSessionCompanion extends UpdateCompanion<AppSessionData> {
+  final Value<int> id;
+  final Value<String?> currentUserId;
+  final Value<String> languageCode;
+  final Value<DateTime> lastUpdated;
+  const AppSessionCompanion({
+    this.id = const Value.absent(),
+    this.currentUserId = const Value.absent(),
+    this.languageCode = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
+  });
+  AppSessionCompanion.insert({
+    this.id = const Value.absent(),
+    this.currentUserId = const Value.absent(),
+    this.languageCode = const Value.absent(),
+    required DateTime lastUpdated,
+  }) : lastUpdated = Value(lastUpdated);
+  static Insertable<AppSessionData> custom({
+    Expression<int>? id,
+    Expression<String>? currentUserId,
+    Expression<String>? languageCode,
+    Expression<DateTime>? lastUpdated,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (currentUserId != null) 'current_user_id': currentUserId,
+      if (languageCode != null) 'language_code': languageCode,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
+    });
+  }
+
+  AppSessionCompanion copyWith({
+    Value<int>? id,
+    Value<String?>? currentUserId,
+    Value<String>? languageCode,
+    Value<DateTime>? lastUpdated,
+  }) {
+    return AppSessionCompanion(
+      id: id ?? this.id,
+      currentUserId: currentUserId ?? this.currentUserId,
+      languageCode: languageCode ?? this.languageCode,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (currentUserId.present) {
+      map['current_user_id'] = Variable<String>(currentUserId.value);
+    }
+    if (languageCode.present) {
+      map['language_code'] = Variable<String>(languageCode.value);
+    }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppSessionCompanion(')
+          ..write('id: $id, ')
+          ..write('currentUserId: $currentUserId, ')
+          ..write('languageCode: $languageCode, ')
+          ..write('lastUpdated: $lastUpdated')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1564,6 +1885,7 @@ class TranscriptsCompanion extends UpdateCompanion<Transcript> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $AppSessionTable appSession = $AppSessionTable(this);
   late final $UsersTable users = $UsersTable(this);
   late final $CardsTable cards = $CardsTable(this);
   late final $AudiosTable audios = $AudiosTable(this);
@@ -1573,6 +1895,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
+    appSession,
     users,
     cards,
     audios,
@@ -1604,6 +1927,187 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ]);
 }
 
+typedef $$AppSessionTableCreateCompanionBuilder =
+    AppSessionCompanion Function({
+      Value<int> id,
+      Value<String?> currentUserId,
+      Value<String> languageCode,
+      required DateTime lastUpdated,
+    });
+typedef $$AppSessionTableUpdateCompanionBuilder =
+    AppSessionCompanion Function({
+      Value<int> id,
+      Value<String?> currentUserId,
+      Value<String> languageCode,
+      Value<DateTime> lastUpdated,
+    });
+
+class $$AppSessionTableFilterComposer
+    extends Composer<_$AppDatabase, $AppSessionTable> {
+  $$AppSessionTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currentUserId => $composableBuilder(
+    column: $table.currentUserId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get languageCode => $composableBuilder(
+    column: $table.languageCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastUpdated => $composableBuilder(
+    column: $table.lastUpdated,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AppSessionTableOrderingComposer
+    extends Composer<_$AppDatabase, $AppSessionTable> {
+  $$AppSessionTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currentUserId => $composableBuilder(
+    column: $table.currentUserId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get languageCode => $composableBuilder(
+    column: $table.languageCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastUpdated => $composableBuilder(
+    column: $table.lastUpdated,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AppSessionTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AppSessionTable> {
+  $$AppSessionTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get currentUserId => $composableBuilder(
+    column: $table.currentUserId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get languageCode => $composableBuilder(
+    column: $table.languageCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastUpdated => $composableBuilder(
+    column: $table.lastUpdated,
+    builder: (column) => column,
+  );
+}
+
+class $$AppSessionTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AppSessionTable,
+          AppSessionData,
+          $$AppSessionTableFilterComposer,
+          $$AppSessionTableOrderingComposer,
+          $$AppSessionTableAnnotationComposer,
+          $$AppSessionTableCreateCompanionBuilder,
+          $$AppSessionTableUpdateCompanionBuilder,
+          (
+            AppSessionData,
+            BaseReferences<_$AppDatabase, $AppSessionTable, AppSessionData>,
+          ),
+          AppSessionData,
+          PrefetchHooks Function()
+        > {
+  $$AppSessionTableTableManager(_$AppDatabase db, $AppSessionTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppSessionTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppSessionTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppSessionTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String?> currentUserId = const Value.absent(),
+                Value<String> languageCode = const Value.absent(),
+                Value<DateTime> lastUpdated = const Value.absent(),
+              }) => AppSessionCompanion(
+                id: id,
+                currentUserId: currentUserId,
+                languageCode: languageCode,
+                lastUpdated: lastUpdated,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String?> currentUserId = const Value.absent(),
+                Value<String> languageCode = const Value.absent(),
+                required DateTime lastUpdated,
+              }) => AppSessionCompanion.insert(
+                id: id,
+                currentUserId: currentUserId,
+                languageCode: languageCode,
+                lastUpdated: lastUpdated,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AppSessionTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AppSessionTable,
+      AppSessionData,
+      $$AppSessionTableFilterComposer,
+      $$AppSessionTableOrderingComposer,
+      $$AppSessionTableAnnotationComposer,
+      $$AppSessionTableCreateCompanionBuilder,
+      $$AppSessionTableUpdateCompanionBuilder,
+      (
+        AppSessionData,
+        BaseReferences<_$AppDatabase, $AppSessionTable, AppSessionData>,
+      ),
+      AppSessionData,
+      PrefetchHooks Function()
+    >;
 typedef $$UsersTableCreateCompanionBuilder =
     UsersCompanion Function({
       required String id,
@@ -3077,6 +3581,8 @@ typedef $$TranscriptsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
+  $$AppSessionTableTableManager get appSession =>
+      $$AppSessionTableTableManager(_db, _db.appSession);
   $$UsersTableTableManager get users =>
       $$UsersTableTableManager(_db, _db.users);
   $$CardsTableTableManager get cards =>

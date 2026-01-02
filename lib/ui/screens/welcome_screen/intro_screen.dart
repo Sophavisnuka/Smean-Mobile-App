@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:smean_mobile_app/database/database.dart';
 import 'package:smean_mobile_app/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
@@ -48,14 +49,26 @@ class IntroScreen extends StatelessWidget {
   ];
 
   // Mark that user has seen the intro
-  Future<void> _markIntroAsSeen() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hasSeenIntro', true);
+  Future<void> _markIntroAsSeen(BuildContext context) async {
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    final existing = await (db.select(
+      db.appSession,
+    )..limit(1)).getSingleOrNull();
+
+    if (existing == null) {
+      // Insert new session with hasSeenIntro = true
+      await db
+          .into(db.appSession)
+          .insert(
+            AppSessionCompanion(lastUpdated: drift.Value(DateTime.now())),
+          );
+    }
+    // If session exists, we don't need to do anything since intro was seen
   }
 
   // Navigate to login and mark intro as seen
   void _completeIntro(BuildContext context) async {
-    await _markIntroAsSeen();
+    await _markIntroAsSeen(context);
     if (context.mounted) {
       Navigator.of(
         context,
