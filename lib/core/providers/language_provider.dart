@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:drift/drift.dart' as drift;
+import '../../data/database/database.dart';
 
-class LanguageProvider extends ChangeNotifier{
+class LanguageProvider extends ChangeNotifier {
+  final AppDatabase db;
+
   // set english as default language
   Locale _currentLocale = const Locale('en');
 
-  Locale get currentLocale => _currentLocale; 
+  Locale get currentLocale => _currentLocale;
 
-  LanguageProvider() {
+  LanguageProvider(this.db) {
     _loadLanguage();
   }
 
@@ -24,14 +27,39 @@ class LanguageProvider extends ChangeNotifier{
   }
 
   Future<void> _saveLanguage(Locale locale) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('langauge_code', locale.languageCode);
+    final existing = await (db.select(
+      db.appSession,
+    )..limit(1)).getSingleOrNull();
+
+    if (existing == null) {
+      // Insert new session with language
+      await db
+          .into(db.appSession)
+          .insert(
+            AppSessionCompanion(
+              languageCode: drift.Value(locale.languageCode),
+              lastUpdated: drift.Value(DateTime.now()),
+            ),
+          );
+    } else {
+      // Update existing session
+      await (db.update(
+        db.appSession,
+      )..where((t) => t.id.equals(existing.id))).write(
+        AppSessionCompanion(
+          languageCode: drift.Value(locale.languageCode),
+          lastUpdated: drift.Value(DateTime.now()),
+        ),
+      );
+    }
   }
+
   Future<void> _loadLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? languageCode = prefs.getString('langauge_code');
-    if(languageCode != null) {
-      _currentLocale = Locale(languageCode);
+    final session = await (db.select(
+      db.appSession,
+    )..limit(1)).getSingleOrNull();
+    if (session != null) {
+      _currentLocale = Locale(session.languageCode);
       notifyListeners();
     }
   }

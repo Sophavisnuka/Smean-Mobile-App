@@ -1,11 +1,9 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/drift.dart' as drift;
 import '../models/user_class.dart';
 import '../database/database.dart';
 
 class AuthRepository {
   final AppDatabase db;
-  static const currentUserKey = 'current_user_id';
 
   AuthRepository(this.db);
 
@@ -73,19 +71,58 @@ class AuthRepository {
     );
   }
 
-  /// Store current user ID in SharedPreferences (lightweight session management)
+  /// Get current user ID from database session
   Future<String?> getCurrentUserId() async {
-    final sp = await SharedPreferences.getInstance();
-    return sp.getString(currentUserKey);
+    final session = await (db.select(
+      db.appSession,
+    )..limit(1)).getSingleOrNull();
+    return session?.currentUserId;
   }
 
+  /// Set current user ID in database session
   Future<void> setCurrentUserId(String id) async {
-    final sp = await SharedPreferences.getInstance();
-    await sp.setString(currentUserKey, id);
+    final existing = await (db.select(
+      db.appSession,
+    )..limit(1)).getSingleOrNull();
+
+    if (existing == null) {
+      // Insert new session
+      await db
+          .into(db.appSession)
+          .insert(
+            AppSessionCompanion(
+              currentUserId: drift.Value(id),
+              lastUpdated: drift.Value(DateTime.now()),
+            ),
+          );
+    } else {
+      // Update existing session
+      await (db.update(
+        db.appSession,
+      )..where((t) => t.id.equals(existing.id))).write(
+        AppSessionCompanion(
+          currentUserId: drift.Value(id),
+          lastUpdated: drift.Value(DateTime.now()),
+        ),
+      );
+    }
   }
 
+  /// Clear current user session
   Future<void> clearCurrentUser() async {
-    final sp = await SharedPreferences.getInstance();
-    await sp.remove(currentUserKey);
+    final existing = await (db.select(
+      db.appSession,
+    )..limit(1)).getSingleOrNull();
+
+    if (existing != null) {
+      await (db.update(
+        db.appSession,
+      )..where((t) => t.id.equals(existing.id))).write(
+        AppSessionCompanion(
+          currentUserId: const drift.Value(null),
+          lastUpdated: drift.Value(DateTime.now()),
+        ),
+      );
+    }
   }
 }

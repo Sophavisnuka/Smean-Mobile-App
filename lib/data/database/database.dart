@@ -1,10 +1,20 @@
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
+import 'connection/connection.dart' as impl;
+
 part 'database.g.dart';
 
 // ====================
 // TABLE DEFINITIONS
 // ====================
+
+/// App Session table - Stores the current logged-in user (single row)
+class AppSession extends Table {
+  IntColumn get id => integer().autoIncrement()(); // Always 1 row
+  TextColumn get currentUserId => text().nullable()();
+  TextColumn get languageCode =>
+      text().withDefault(const Constant('en'))(); // 'en' or 'km'
+  DateTimeColumn get lastUpdated => dateTime()();
+}
 
 /// Users table - Local authentication (multiple users per device)
 class Users extends Table {
@@ -64,20 +74,32 @@ class Transcripts extends Table {
 // DATABASE CLASS
 // ====================
 
-@DriftDatabase(tables: [Users, Cards, Audios, Transcripts])
+@DriftDatabase(tables: [AppSession, Users, Cards, Audios, Transcripts])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          // Add AppSession table
+          await m.createTable(appSession);
+        }
+      },
+    );
+  }
 
   // ====================
   // HELPER: Open Connection (Cross-Platform)
   // ====================
   static QueryExecutor _openConnection() {
-    return driftDatabase(
-      name: 'smean_app_db',
-      native: const DriftNativeOptions(shareAcrossIsolates: true),
-    );
+    return impl.connect('smean_app_db');
   }
 }
