@@ -2,11 +2,11 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/constants/app_colors.dart';
-import 'package:smean_mobile_app/models/card_model.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
+import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/service/transcript_service.dart';
-import 'package:smean_mobile_app/database/database.dart';
-import 'package:smean_mobile_app/utils/formatting.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
+import 'package:smean_mobile_app/core/utils/formatting.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AudioDetailsScreen extends StatefulWidget {

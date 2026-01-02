@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart' as drift;
-import 'package:smean_mobile_app/database/database.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
 
 /// Repository for managing Transcriptions linked to Cards
 class TranscriptRepository {

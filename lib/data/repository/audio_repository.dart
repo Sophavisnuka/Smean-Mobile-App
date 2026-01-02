@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart' as drift;
-import 'package:smean_mobile_app/database/database.dart';
-import 'package:smean_mobile_app/models/card_model.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
+import 'package:smean_mobile_app/data/models/card_model.dart';
 
 /// Repository for managing Cards with Audio (recorded or uploaded)
 class AudioRepository {

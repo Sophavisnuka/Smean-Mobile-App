@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/constants/app_colors.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
-import 'package:smean_mobile_app/database/database.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
 
 class ProfileCard extends StatefulWidget {
   const ProfileCard({super.key, required this.isKhmer, this.onTap});

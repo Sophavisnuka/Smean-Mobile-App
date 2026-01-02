@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:smean_mobile_app/constants/app_colors.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
 
 class FanMenuItem {
   final IconData icon;

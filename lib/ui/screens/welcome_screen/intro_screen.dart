@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:smean_mobile_app/database/database.dart';
-import 'package:smean_mobile_app/providers/language_provider.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
+import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 

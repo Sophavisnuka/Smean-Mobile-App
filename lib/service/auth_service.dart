@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:smean_mobile_app/repository/user_repository.dart';
-import 'package:smean_mobile_app/models/user_class.dart';
-import 'package:smean_mobile_app/database/database.dart';
+import 'package:smean_mobile_app/data/repository/user_repository.dart';
+import 'package:smean_mobile_app/data/models/user_class.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:uuid/uuid.dart';
 
 class AuthService {

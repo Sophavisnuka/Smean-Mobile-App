@@ -1,6 +1,6 @@
 import 'package:uuid/uuid.dart';
-import 'package:smean_mobile_app/database/database.dart';
-import 'package:smean_mobile_app/repository/transcript_repository.dart';
+import 'package:smean_mobile_app/data/database/database.dart';
+import 'package:smean_mobile_app/data/repository/transcript_repository.dart';
 
 const uuid = Uuid();
 
