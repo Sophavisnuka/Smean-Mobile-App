@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
+import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/service/record_audio_service.dart';
 import 'package:smean_mobile_app/data/repository/audio_repository.dart';
@@ -9,6 +10,7 @@ import 'package:smean_mobile_app/service/transcript_service.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/core/utils/formatting.dart';
+import 'package:smean_mobile_app/ui/widgets/show_confirm_dialog.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
@@ -40,32 +42,9 @@ class _RecordScreenState extends State<RecordScreen> {
   Future<void> _saveToHome() async {
     if (_audioService.recordedFilePath == null) return;
 
-    final controller = TextEditingController();
-
     final title = await showDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Save recording'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'Enter title'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final t = controller.text.trim();
-              if (t.isEmpty) return;
-              Navigator.pop(context, t);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+      builder: (_) => ShowInputDialog(titleText: 'Save the Record', hintText: 'Enter the record title')
     );
 
     if (title == null) return;
@@ -90,12 +69,7 @@ class _RecordScreenState extends State<RecordScreen> {
     if (!mounted) return;
 
     // Show generating message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Generating transcription...'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    CustomSnackBar.info(context, 'Generate Transcript...');
 
     // Generate mock transcription (2 second delay)
     await _transcriptService.generateMockTranscription(
@@ -110,13 +84,7 @@ class _RecordScreenState extends State<RecordScreen> {
 
     // Show success message
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Recording saved: $title'),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      CustomSnackBar.success(context, 'Record have been save');
     }
 
     // Call callback to switch back to home and reload
@@ -129,9 +97,7 @@ class _RecordScreenState extends State<RecordScreen> {
     } else {
       final success = await _audioService.startRecording();
       if (!success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microphone permission is required.')),
-        );
+        CustomSnackBar.info(context, 'Microphone Permission Required!');
       }
     }
   }

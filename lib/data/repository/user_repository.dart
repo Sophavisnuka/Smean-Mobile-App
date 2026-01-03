@@ -18,6 +18,7 @@ class AuthRepository {
             email: user.email,
             passwordHash: user.passwordHash,
             createdAt: user.createdAt,
+            imagePath: user.imagePath
           ),
         )
         .toList();
@@ -34,6 +35,7 @@ class AuthRepository {
             email: drift.Value(user.email),
             passwordHash: drift.Value(user.passwordHash),
             createdAt: drift.Value(user.createdAt),
+            imagePath: drift.Value(user.imagePath)
           ),
         );
   }
@@ -52,6 +54,7 @@ class AuthRepository {
       email: user.email,
       passwordHash: user.passwordHash,
       createdAt: user.createdAt,
+      imagePath: user.imagePath
     );
   }
 
@@ -68,6 +71,7 @@ class AuthRepository {
       email: user.email,
       passwordHash: user.passwordHash,
       createdAt: user.createdAt,
+      imagePath: user.imagePath
     );
   }
 
@@ -124,5 +128,21 @@ class AuthRepository {
         ),
       );
     }
+  }
+  
+  Future<void> editUsername(String userId,String newUsername) async {
+    await (db.update(db.users)..where((user) => user.id.equals(userId))).write(
+      UsersCompanion(
+        name: drift.Value(newUsername),
+      ),
+    );
+  }
+
+  Future<void> editProfile(String userId, String? newProfile) async {
+    await (db.update(db.users)..where((user) => user.id.equals(userId))).write(
+      UsersCompanion(
+        imagePath: drift.Value(newProfile)
+      )
+    );
   }
 }

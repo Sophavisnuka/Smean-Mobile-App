@@ -9,6 +9,9 @@ class AuthService {
   final AuthRepository _repo;
 
   AuthService(AppDatabase db) : _repo = AuthRepository(db);
+  
+  // Expose repository for direct access when needed
+  AuthRepository get repo => _repo;
 
   String _hashPassword(String password) {
     final bytes = utf8.encode(password);
