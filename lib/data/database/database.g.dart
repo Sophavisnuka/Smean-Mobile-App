@@ -379,6 +379,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _imagePathMeta = const VerificationMeta(
+    'imagePath',
+  );
+  @override
+  late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
+    'image_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -386,6 +397,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     email,
     passwordHash,
     createdAt,
+    imagePath,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -439,6 +451,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('image_path')) {
+      context.handle(
+        _imagePathMeta,
+        imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta),
+      );
+    }
     return context;
   }
 
@@ -468,6 +486,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      imagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_path'],
+      ),
     );
   }
 
@@ -483,12 +505,14 @@ class User extends DataClass implements Insertable<User> {
   final String email;
   final String passwordHash;
   final DateTime createdAt;
+  final String? imagePath;
   const User({
     required this.id,
     required this.name,
     required this.email,
     required this.passwordHash,
     required this.createdAt,
+    this.imagePath,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -498,6 +522,9 @@ class User extends DataClass implements Insertable<User> {
     map['email'] = Variable<String>(email);
     map['password_hash'] = Variable<String>(passwordHash);
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || imagePath != null) {
+      map['image_path'] = Variable<String>(imagePath);
+    }
     return map;
   }
 
@@ -508,6 +535,9 @@ class User extends DataClass implements Insertable<User> {
       email: Value(email),
       passwordHash: Value(passwordHash),
       createdAt: Value(createdAt),
+      imagePath: imagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imagePath),
     );
   }
 
@@ -522,6 +552,7 @@ class User extends DataClass implements Insertable<User> {
       email: serializer.fromJson<String>(json['email']),
       passwordHash: serializer.fromJson<String>(json['passwordHash']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      imagePath: serializer.fromJson<String?>(json['imagePath']),
     );
   }
   @override
@@ -533,6 +564,7 @@ class User extends DataClass implements Insertable<User> {
       'email': serializer.toJson<String>(email),
       'passwordHash': serializer.toJson<String>(passwordHash),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'imagePath': serializer.toJson<String?>(imagePath),
     };
   }
 
@@ -542,12 +574,14 @@ class User extends DataClass implements Insertable<User> {
     String? email,
     String? passwordHash,
     DateTime? createdAt,
+    Value<String?> imagePath = const Value.absent(),
   }) => User(
     id: id ?? this.id,
     name: name ?? this.name,
     email: email ?? this.email,
     passwordHash: passwordHash ?? this.passwordHash,
     createdAt: createdAt ?? this.createdAt,
+    imagePath: imagePath.present ? imagePath.value : this.imagePath,
   );
   User copyWithCompanion(UsersCompanion data) {
     return User(
@@ -558,6 +592,7 @@ class User extends DataClass implements Insertable<User> {
           ? data.passwordHash.value
           : this.passwordHash,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
     );
   }
 
@@ -568,13 +603,15 @@ class User extends DataClass implements Insertable<User> {
           ..write('name: $name, ')
           ..write('email: $email, ')
           ..write('passwordHash: $passwordHash, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('imagePath: $imagePath')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, email, passwordHash, createdAt);
+  int get hashCode =>
+      Object.hash(id, name, email, passwordHash, createdAt, imagePath);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -583,7 +620,8 @@ class User extends DataClass implements Insertable<User> {
           other.name == this.name &&
           other.email == this.email &&
           other.passwordHash == this.passwordHash &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.imagePath == this.imagePath);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -592,6 +630,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String> email;
   final Value<String> passwordHash;
   final Value<DateTime> createdAt;
+  final Value<String?> imagePath;
   final Value<int> rowid;
   const UsersCompanion({
     this.id = const Value.absent(),
@@ -599,6 +638,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.email = const Value.absent(),
     this.passwordHash = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.imagePath = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UsersCompanion.insert({
@@ -607,6 +647,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     required String email,
     required String passwordHash,
     required DateTime createdAt,
+    this.imagePath = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -619,6 +660,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<String>? email,
     Expression<String>? passwordHash,
     Expression<DateTime>? createdAt,
+    Expression<String>? imagePath,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -627,6 +669,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (email != null) 'email': email,
       if (passwordHash != null) 'password_hash': passwordHash,
       if (createdAt != null) 'created_at': createdAt,
+      if (imagePath != null) 'image_path': imagePath,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -637,6 +680,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<String>? email,
     Value<String>? passwordHash,
     Value<DateTime>? createdAt,
+    Value<String?>? imagePath,
     Value<int>? rowid,
   }) {
     return UsersCompanion(
@@ -645,6 +689,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       email: email ?? this.email,
       passwordHash: passwordHash ?? this.passwordHash,
       createdAt: createdAt ?? this.createdAt,
+      imagePath: imagePath ?? this.imagePath,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -667,6 +712,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (imagePath.present) {
+      map['image_path'] = Variable<String>(imagePath.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -681,6 +729,7 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('email: $email, ')
           ..write('passwordHash: $passwordHash, ')
           ..write('createdAt: $createdAt, ')
+          ..write('imagePath: $imagePath, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2115,6 +2164,7 @@ typedef $$UsersTableCreateCompanionBuilder =
       required String email,
       required String passwordHash,
       required DateTime createdAt,
+      Value<String?> imagePath,
       Value<int> rowid,
     });
 typedef $$UsersTableUpdateCompanionBuilder =
@@ -2124,6 +2174,7 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<String> email,
       Value<String> passwordHash,
       Value<DateTime> createdAt,
+      Value<String?> imagePath,
       Value<int> rowid,
     });
 
@@ -2181,6 +2232,11 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2243,6 +2299,11 @@ class $$UsersTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UsersTableAnnotationComposer
@@ -2270,6 +2331,9 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get imagePath =>
+      $composableBuilder(column: $table.imagePath, builder: (column) => column);
 
   Expression<T> cardsRefs<T extends Object>(
     Expression<T> Function($$CardsTableAnnotationComposer a) f,
@@ -2330,6 +2394,7 @@ class $$UsersTableTableManager
                 Value<String> email = const Value.absent(),
                 Value<String> passwordHash = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UsersCompanion(
                 id: id,
@@ -2337,6 +2402,7 @@ class $$UsersTableTableManager
                 email: email,
                 passwordHash: passwordHash,
                 createdAt: createdAt,
+                imagePath: imagePath,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2346,6 +2412,7 @@ class $$UsersTableTableManager
                 required String email,
                 required String passwordHash,
                 required DateTime createdAt,
+                Value<String?> imagePath = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UsersCompanion.insert(
                 id: id,
@@ -2353,6 +2420,7 @@ class $$UsersTableTableManager
                 email: email,
                 passwordHash: passwordHash,
                 createdAt: createdAt,
+                imagePath: imagePath,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -23,45 +23,58 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   // Background loading during splash animation
   Future<void> _initializeApp() async {
-    final db = Provider.of<AppDatabase>(context, listen: false);
-    final authService = AuthService(db);
+    try {
+      final db = Provider.of<AppDatabase>(context, listen: false);
+      final authService = AuthService(db);
 
-    // Run all initialization tasks in parallel
-    final results = await Future.wait([
-      // Task 1: Check if first time user (returns bool instead of navigating)
-      _checkIfFirstTimeUser(),
+      // Run all initialization tasks in parallel
+      final results = await Future.wait([
+        // Task 1: Check if first time user (returns bool instead of navigating)
+        _checkIfFirstTimeUser(),
 
-      // Task 2: Check if user is already logged in
-      authService.getCurrentUser(),
+        // Task 2: Check if user is already logged in
+        authService.getCurrentUser(),
 
-      // Task 3: Preload any necessary data or assets
-      _preloadData(),
+        // Task 3: Preload any necessary data or assets
+        _preloadData(),
 
-      // Task 4: Wait for animation (minimum 3 seconds to show animation)
-      Future.delayed(Duration(seconds: 3)),
-    ]);
+        // Task 4: Wait for animation (minimum 3 seconds to show animation)
+        Future.delayed(Duration(seconds: 3)),
+      ]);
 
-    // After all tasks complete (including 3s animation), navigate appropriately
-    final bool isFirstTime = results[0] as bool;
-    final currentUser = results[1]; // AppUser? or null
+      // After all tasks complete (including 3s animation), navigate appropriately
+      final bool isFirstTime = results[0] as bool;
+      final currentUser = results[1]; // AppUser? or null
 
-    if (mounted) {
-      // Priority 1: If user is already logged in, go straight to main
-      if (currentUser != null) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => MainScreen()),
-        );
+      if (mounted) {
+        // Priority 1: If user is already logged in, go straight to main
+        if (currentUser != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => MainScreen()),
+          );
+        }
+        // Priority 2: First time user, show intro screens
+        else if (isFirstTime) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => IntroScreen()),
+          );
+        }
+        // Priority 3: Returning user but not logged in, show login
+        else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
+        }
       }
-      // Priority 2: First time user, show intro screens
-      else if (isFirstTime) {
+    } catch (e, stackTrace) {
+      print('Error initializing app: $e');
+      print('Stack trace: $stackTrace');
+      
+      // On error, just go to intro screen after delay
+      await Future.delayed(Duration(seconds: 3));
+      if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => IntroScreen()),
-        );
-      }
-      // Priority 3: Returning user but not logged in, show login
-      else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => LoginScreen()),
         );
       }
     }

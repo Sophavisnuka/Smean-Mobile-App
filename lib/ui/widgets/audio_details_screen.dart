@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
+import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/service/transcript_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
@@ -107,9 +108,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
         isGenerating = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to generate transcript: $e')),
-      );
+      CustomSnackBar.error(context, 'Failed to generate transcript');
     }
   }
 

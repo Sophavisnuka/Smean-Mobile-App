@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
+import 'package:smean_mobile_app/data/models/audio_class.dart';
+import 'package:smean_mobile_app/data/models/transcript_class.dart';
 
 /// Repository for managing Cards with Audio (recorded or uploaded)
 class AudioRepository {
@@ -8,6 +10,26 @@ class AudioRepository {
 
   AudioRepository(this.db);
 
+  // Future<void> convertDbToModelObject() async {
+  //   final audio = audioData != null
+  //         ? AudioRecord(
+  //             audioId: audioData.id,
+  //             filePath: audioData.filePath,
+  //             audioTitle: card.cardName,
+  //             createdAt: audioData.createdAt,
+  //             duration: audioData.duration,
+  //             isFavorite: card.isFavorite,
+  //           )
+  //         : null;
+
+  //     final transcript = transcriptData != null
+  //         ? TranscriptClass(
+  //             transcriptId: transcriptData.id,
+  //             text: transcriptData.transcriptionText,
+  //             audioId: audioData?.id ?? '',
+  //           )
+  //         : null;
+  // }
   /// Get all cards for a specific user (with audio and transcript info)
   Future<List<CardModel>> getCardsForUser(String userId) async {
     final query = db.select(db.cards)
@@ -19,8 +41,28 @@ class AudioRepository {
     // Load audio and transcript for each card
     final cardModels = <CardModel>[];
     for (final card in cards) {
-      final audio = await _getAudioForCard(card.id);
-      final transcript = await _getTranscriptForCard(card.id);
+      final audioData = await _getAudioForCard(card.id);
+      final transcriptData = await _getTranscriptForCard(card.id);
+
+      // Convert database objects to model objects
+      final audio = audioData != null
+          ? AudioRecord(
+              audioId: audioData.id,
+              filePath: audioData.filePath,
+              audioTitle: card.cardName,
+              createdAt: audioData.createdAt,
+              duration: audioData.duration,
+              isFavorite: card.isFavorite,
+            )
+          : null;
+
+      final transcript = transcriptData != null
+          ? TranscriptClass(
+              transcriptId: transcriptData.id,
+              text: transcriptData.transcriptionText,
+              audioId: audioData?.id ?? '',
+            )
+          : null;
 
       cardModels.add(
         CardModel(
@@ -30,12 +72,8 @@ class AudioRepository {
           isFavorite: card.isFavorite,
           createdAt: card.createdAt,
           updatedAt: card.updatedAt,
-          audioId: audio?.id,
-          audioFilePath: audio?.filePath,
-          audioSourceType: audio?.sourceType,
-          audioDuration: audio?.duration,
-          transcriptId: transcript?.id,
-          transcriptionText: transcript?.transcriptionText,
+          audio: audio,
+          transcript: transcript,
         ),
       );
     }
@@ -50,8 +88,28 @@ class AudioRepository {
     final card = await query.getSingleOrNull();
     if (card == null) return null;
 
-    final audio = await _getAudioForCard(cardId);
-    final transcript = await _getTranscriptForCard(cardId);
+    final audioData = await _getAudioForCard(cardId);
+    final transcriptData = await _getTranscriptForCard(cardId);
+
+    // Convert database objects to model objects
+    final audio = audioData != null
+        ? AudioRecord(
+            audioId: audioData.id,
+            filePath: audioData.filePath,
+            audioTitle: card.cardName,
+            createdAt: audioData.createdAt,
+            duration: audioData.duration,
+            isFavorite: card.isFavorite,
+          )
+        : null;
+
+    final transcript = transcriptData != null
+        ? TranscriptClass(
+            transcriptId: transcriptData.id,
+            text: transcriptData.transcriptionText,
+            audioId: audioData?.id ?? '',
+          )
+        : null;
 
     return CardModel(
       cardId: card.id,
@@ -60,12 +118,8 @@ class AudioRepository {
       isFavorite: card.isFavorite,
       createdAt: card.createdAt,
       updatedAt: card.updatedAt,
-      audioId: audio?.id,
-      audioFilePath: audio?.filePath,
-      audioSourceType: audio?.sourceType,
-      audioDuration: audio?.duration,
-      transcriptId: transcript?.id,
-      transcriptionText: transcript?.transcriptionText,
+      audio: audio,
+      transcript: transcript,
     );
   }
 
@@ -149,8 +203,28 @@ class AudioRepository {
 
     final cardModels = <CardModel>[];
     for (final card in cards) {
-      final audio = await _getAudioForCard(card.id);
-      final transcript = await _getTranscriptForCard(card.id);
+      final audioData = await _getAudioForCard(card.id);
+      final transcriptData = await _getTranscriptForCard(card.id);
+
+      // Convert database objects to model objects
+      final audio = audioData != null
+          ? AudioRecord(
+              audioId: audioData.id,
+              filePath: audioData.filePath,
+              audioTitle: card.cardName,
+              createdAt: audioData.createdAt,
+              duration: audioData.duration,
+              isFavorite: card.isFavorite,
+            )
+          : null;
+
+      final transcript = transcriptData != null
+          ? TranscriptClass(
+              transcriptId: transcriptData.id,
+              text: transcriptData.transcriptionText,
+              audioId: audioData?.id ?? '',
+            )
+          : null;
 
       cardModels.add(
         CardModel(
@@ -160,12 +234,8 @@ class AudioRepository {
           isFavorite: card.isFavorite,
           createdAt: card.createdAt,
           updatedAt: card.updatedAt,
-          audioId: audio?.id,
-          audioFilePath: audio?.filePath,
-          audioSourceType: audio?.sourceType,
-          audioDuration: audio?.duration,
-          transcriptId: transcript?.id,
-          transcriptionText: transcript?.transcriptionText,
+          audio: audio,
+          transcript: transcript,
         ),
       );
     }
@@ -185,8 +255,28 @@ class AudioRepository {
 
     final cardModels = <CardModel>[];
     for (final card in cards) {
-      final audio = await _getAudioForCard(card.id);
-      final transcript = await _getTranscriptForCard(card.id);
+      final audioData = await _getAudioForCard(card.id);
+      final transcriptData = await _getTranscriptForCard(card.id);
+
+      // Convert database objects to model objects
+      final audio = audioData != null
+          ? AudioRecord(
+              audioId: audioData.id,
+              filePath: audioData.filePath,
+              audioTitle: card.cardName,
+              createdAt: audioData.createdAt,
+              duration: audioData.duration,
+              isFavorite: card.isFavorite,
+            )
+          : null;
+
+      final transcript = transcriptData != null
+          ? TranscriptClass(
+              transcriptId: transcriptData.id,
+              text: transcriptData.transcriptionText,
+              audioId: audioData?.id ?? '',
+            )
+          : null;
 
       cardModels.add(
         CardModel(
@@ -196,12 +286,8 @@ class AudioRepository {
           isFavorite: card.isFavorite,
           createdAt: card.createdAt,
           updatedAt: card.updatedAt,
-          audioId: audio?.id,
-          audioFilePath: audio?.filePath,
-          audioSourceType: audio?.sourceType,
-          audioDuration: audio?.duration,
-          transcriptId: transcript?.id,
-          transcriptionText: transcript?.transcriptionText,
+          audio: audio,
+          transcript: transcript,
         ),
       );
     }
