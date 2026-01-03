@@ -1,3 +1,6 @@
+import 'audio_class.dart';
+import 'transcript_class.dart';
+
 /// Represents a Card in the app - the main entity containing audio and transcription
 class CardModel {
   final String cardId;
@@ -7,15 +10,9 @@ class CardModel {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  // Audio information (from audios table)
-  final String? audioId;
-  final String? audioFilePath;
-  final String? audioSourceType; // 'recorded' or 'uploaded'
-  final int? audioDuration; // seconds
-
-  // Transcription information (from transcripts table)
-  final String? transcriptId;
-  final String? transcriptionText;
+  // Composition: Use existing models instead of duplicating attributes
+  final AudioRecord? audio;
+  final TranscriptClass? transcript;
 
   CardModel({
     required this.cardId,
@@ -24,22 +21,21 @@ class CardModel {
     required this.isFavorite,
     required this.createdAt,
     required this.updatedAt,
-    this.audioId,
-    this.audioFilePath,
-    this.audioSourceType,
-    this.audioDuration,
-    this.transcriptId,
-    this.transcriptionText,
+    this.audio,
+    this.transcript,
   });
 
-  Duration? get audioDurationObj =>
-      audioDuration != null ? Duration(seconds: audioDuration!) : null;
+  // Convenience getters for backward compatibility
+  String? get audioId => audio?.audioId;
+  String? get audioFilePath => audio?.filePath;
+  int? get audioDuration => audio?.duration;
+  Duration? get audioDurationObj => audio?.getDuration;
+  
+  String? get transcriptId => transcript?.transcriptId;
+  String? get transcriptionText => transcript?.text;
 
-  bool get hasAudio => audioFilePath != null;
-  bool get hasTranscript =>
-      transcriptionText != null && transcriptionText!.isNotEmpty;
-  bool get isRecorded => audioSourceType == 'recorded';
-  bool get isUploaded => audioSourceType == 'uploaded';
+  bool get hasAudio => audio != null;
+  bool get hasTranscript => transcript != null && transcript!.text.isNotEmpty;
 
   /// Create a copy with updated fields
   CardModel copyWith({
@@ -49,12 +45,8 @@ class CardModel {
     bool? isFavorite,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? audioId,
-    String? audioFilePath,
-    String? audioSourceType,
-    int? audioDuration,
-    String? transcriptId,
-    String? transcriptionText,
+    AudioRecord? audio,
+    TranscriptClass? transcript,
   }) {
     return CardModel(
       cardId: cardId ?? this.cardId,
@@ -63,12 +55,8 @@ class CardModel {
       isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      audioId: audioId ?? this.audioId,
-      audioFilePath: audioFilePath ?? this.audioFilePath,
-      audioSourceType: audioSourceType ?? this.audioSourceType,
-      audioDuration: audioDuration ?? this.audioDuration,
-      transcriptId: transcriptId ?? this.transcriptId,
-      transcriptionText: transcriptionText ?? this.transcriptionText,
+      audio: audio ?? this.audio,
+      transcript: transcript ?? this.transcript,
     );
   }
 }

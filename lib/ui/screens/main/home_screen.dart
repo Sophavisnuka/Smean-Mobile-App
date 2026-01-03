@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/data/repository/audio_repository.dart';
@@ -55,31 +56,13 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _editTitle(CardModel card) async {
-    final controller = TextEditingController(text: card.cardName);
 
     final newTitle = await showDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Edit title'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'Enter new title'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final t = controller.text.trim();
-              if (t.isEmpty) return;
-              Navigator.pop(context, t);
-            },
-            child: const Text('Save'),
-          ),
-        ],
+      builder: (_) => ShowInputDialog(
+        titleText: 'Edit Record title', 
+        hintText: 'Enter a new title',
+        initialValue: card.cardName,
       ),
     );
 
@@ -104,15 +87,7 @@ class HomeScreenState extends State<HomeScreen> {
     await _audioRepo.deleteCard(card.cardId);
 
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Card deleted: ${card.cardName}'),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-
+    CustomSnackBar.success(context, 'You have deleted card ${card.cardName}');
     displayAudio(); // Reload
   }
 

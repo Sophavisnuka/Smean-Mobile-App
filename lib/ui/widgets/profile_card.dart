@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
+import 'package:smean_mobile_app/ui/widgets/profile_image_widget.dart';
 
 class ProfileCard extends StatefulWidget {
   const ProfileCard({super.key, required this.isKhmer, this.onTap});
@@ -16,6 +17,8 @@ class ProfileCard extends StatefulWidget {
 
 class _ProfileCardState extends State<ProfileCard> {
   String _name = '';
+  String? _imagePath;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -23,12 +26,36 @@ class _ProfileCardState extends State<ProfileCard> {
     _loadUser();
   }
 
+  @override
+  void didUpdateWidget(ProfileCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload when widget is rebuilt (e.g., when tab becomes visible)
+    _loadUser();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload when dependencies change (e.g., after database update)
+    if (!_isLoading) {
+      _loadUser();
+    }
+  }
+
   Future<void> _loadUser() async {
+    if (_isLoading) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+
     final db = Provider.of<AppDatabase>(context, listen: false);
     final user = await AuthService(db).getCurrentUser();
 
     setState(() {
       _name = user?.name ?? '';
+      _imagePath = user?.imagePath;
+      _isLoading = false;
     });
   }
 
@@ -51,11 +78,9 @@ class _ProfileCardState extends State<ProfileCard> {
         child: Row(
           children: [
             ClipOval(
-              child: Image.asset(
-                'assets/images/Elite.png',
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
+              child: ProfileImageWidget(
+                imagePath: _imagePath,
+                size: 60,
               ),
             ),
             const SizedBox(width: 20),

@@ -25,10 +25,6 @@ void main() async {
           create: (context) => LanguageProvider(context.read<AppDatabase>()),
         ),
       ],
-      // for device preview
-      // child: DevicePreview(
-      //   builder: (context) => SmeanApp(),
-      // ), // For device preview
       child: const SmeanApp(),
     ),
   );

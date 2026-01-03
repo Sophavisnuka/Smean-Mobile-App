@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
 
@@ -52,16 +53,12 @@ class _RegisterScreenState extends State<RegisterScreen>
     final confirm = _confirmController.text;
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('All fields are required.')));
+      CustomSnackBar.warning(context, 'All fields are required to input');
       return;
     }
 
     if (password != confirm) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Passwords do not match.')));
+      CustomSnackBar.error(context, 'Incorrect password! Please try again');
       return;
     }
 

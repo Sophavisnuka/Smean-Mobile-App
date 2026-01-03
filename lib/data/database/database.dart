@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'connection/connection.dart' as impl;
-
 part 'database.g.dart';
 
 // ====================
@@ -23,6 +22,7 @@ class Users extends Table {
   TextColumn get email => text().unique()();
   TextColumn get passwordHash => text()();
   DateTimeColumn get createdAt => dateTime()();
+  TextColumn get imagePath => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -79,7 +79,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -91,6 +91,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 2) {
           // Add AppSession table
           await m.createTable(appSession);
+        } 
+        if (from < 3) {
+          // add new column
+          await m.addColumn(users, users.imagePath as GeneratedColumn<Object>);
         }
       },
     );
