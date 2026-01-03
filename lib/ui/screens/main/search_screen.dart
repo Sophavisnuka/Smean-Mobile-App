@@ -116,6 +116,7 @@ class SearchScreenState extends State<SearchScreen> {
                           isKhmer: isKhmer,
                           card: card,
                           searchQuery: searchText,
+                          onRefresh: reloadAudios,
                         );
                       },
                     ),

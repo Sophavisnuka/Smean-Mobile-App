@@ -269,6 +269,7 @@ class HomeScreenState extends State<HomeScreen> {
                           onEdit: () => _editTitle(card),
                           onDelete: () => _deleteCard(card),
                           onFavoriteToggle: () => _toggleFavorite(card),
+                          onRefresh: displayAudio,
                         );
                       },
                     );
