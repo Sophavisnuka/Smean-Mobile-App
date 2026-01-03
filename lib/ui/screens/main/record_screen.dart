@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
@@ -9,8 +8,9 @@ import 'package:smean_mobile_app/data/repository/audio_repository.dart';
 import 'package:smean_mobile_app/service/transcript_service.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
-import 'package:smean_mobile_app/core/utils/formatting.dart';
-import 'package:smean_mobile_app/ui/widgets/show_confirm_dialog.dart';
+import 'package:smean_mobile_app/ui/widgets/dialogs/audio_preview_dialog.dart';
+import 'package:smean_mobile_app/ui/widgets/recording/recording_timer_widget.dart';
+import 'package:smean_mobile_app/ui/widgets/recording/recording_button_widget.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
@@ -39,15 +39,41 @@ class _RecordScreenState extends State<RecordScreen> {
     _authService = AuthService(db);
   }
 
-  Future<void> _saveToHome() async {
+  void _showPreviewDialog() {
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AudioPreviewDialog(
+        audioService: _audioService,
+        isKhmer: isKhmer,
+        initialTitle: '',
+        onCancel: () {
+          // Delete recording and close dialog
+          _audioService.deleteRecording();
+          Navigator.of(context).pop();
+        },
+        onConfirm: (title) async {
+          Navigator.of(context).pop();
+          await _confirmAndSave(title);
+        },
+      ),
+    );
+  }
+
+  Future<void> _confirmAndSave(String title) async {
     if (_audioService.recordedFilePath == null) return;
 
-    final title = await showDialog<String>(
-      context: context,
-      builder: (_) => ShowInputDialog(titleText: 'Save the Record', hintText: 'Enter the record title')
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
     );
-
-    if (title == null) return;
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
 
     final user = await _authService.getCurrentUser();
     if (user == null) return;
@@ -69,7 +95,10 @@ class _RecordScreenState extends State<RecordScreen> {
     if (!mounted) return;
 
     // Show generating message
-    CustomSnackBar.info(context, 'Generate Transcript...');
+    CustomSnackBar.info(
+      context,
+      isKhmer ? 'កំពុងបង្កើតអត្ថបទ...' : 'Generate Transcript...',
+    );
 
     // Generate mock transcription (2 second delay)
     await _transcriptService.generateMockTranscription(
@@ -84,7 +113,10 @@ class _RecordScreenState extends State<RecordScreen> {
 
     // Show success message
     if (mounted) {
-      CustomSnackBar.success(context, 'Record have been save');
+      CustomSnackBar.success(
+        context,
+        isKhmer ? 'រក្សាទុកបានជោគជ័យ' : 'Record have been saved',
+      );
     }
 
     // Call callback to switch back to home and reload
@@ -94,12 +126,46 @@ class _RecordScreenState extends State<RecordScreen> {
   Future<void> _handleRecordingToggle() async {
     if (_audioService.isRecording) {
       await _audioService.stopRecording();
+      // Show preview dialog after stopping recording
+      if (mounted && _audioService.recordedFilePath != null) {
+        _showPreviewDialog();
+      }
     } else {
       final success = await _audioService.startRecording();
       if (!success && mounted) {
-        CustomSnackBar.info(context, 'Microphone Permission Required!');
+        final languageProvider = Provider.of<LanguageProvider>(
+          context,
+          listen: false,
+        );
+        final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
+        CustomSnackBar.info(
+          context,
+          isKhmer
+              ? 'ត្រូវការសិទ្ធិប្រើមីក្រូហ្វូន!'
+              : 'Microphone Permission Required!',
+        );
+      }
+      // Force UI update after starting recording
+      if (mounted && success) {
+        setState(() {});
       }
     }
+  }
+
+  String _getStatusMessage(bool isKhmer) {
+    if (_audioService.isRecording) {
+      return isKhmer ? 'កំពុងថតសម្លេង...' : 'Recording...';
+    } else {
+      return isKhmer ? 'ចុចដើម្បីចាប់ផ្តើមថត' : 'Tap to start recording';
+    }
+  }
+
+  Duration _getDisplayDuration() {
+    if (_audioService.isRecording) {
+      return _audioService.elapsed;
+    }
+    return Duration.zero;
   }
 
   @override
@@ -123,6 +189,7 @@ class _RecordScreenState extends State<RecordScreen> {
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -140,120 +207,25 @@ class _RecordScreenState extends State<RecordScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Timer Display
-            Text(
-              _audioService.isRecording
-                  ? formatDuration(_audioService.elapsed)
-                  : _audioService.recordedFilePath != null
-                  ? formatDuration(_audioService.playPosition)
-                  : '00:00',
-              style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-            ),
-
-            if (_audioService.recordedFilePath != null &&
-                !_audioService.isRecording) ...[
-              const SizedBox(height: 20),
-              Slider(
-                value: _audioService.playPosition.inSeconds.toDouble(),
-                max: _audioService.totalDuration.inSeconds.toDouble() > 0
-                    ? _audioService.totalDuration.inSeconds.toDouble()
-                    : 1,
-                onChanged: (value) async {
-                  await _audioService.seekTo(Duration(seconds: value.toInt()));
-                },
-              ),
-              Text(
-                '${formatDuration(_audioService.playPosition)} / ${formatDuration(_audioService.totalDuration)}',
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              ),
-            ],
+            RecordingTimerWidget(duration: _getDisplayDuration()),
 
             const SizedBox(height: 40),
 
+            // Recording Button
             Center(
-              child: GestureDetector(
+              child: RecordingButtonWidget(
+                isRecording: _audioService.isRecording,
                 onTap: _handleRecordingToggle,
-                child: CircleAvatar(
-                  radius: 48,
-                  backgroundColor: _audioService.isRecording
-                      ? Colors.red
-                      : Colors.grey[300],
-                  child: Icon(
-                    _audioService.isRecording ? Icons.stop : Icons.mic,
-                    color: _audioService.isRecording
-                        ? Colors.white
-                        : Colors.black,
-                    size: 48,
-                  ),
-                ),
               ),
             ),
 
             const SizedBox(height: 40),
 
+            // Status Message
             Text(
-              _audioService.isRecording
-                  ? (isKhmer ? 'កំពុងថតសម្លេង...' : 'Recording...')
-                  : _audioService.recordedFilePath != null
-                  ? (isKhmer ? 'ថតរួច' : 'Recording saved')
-                  : (isKhmer
-                        ? 'ចុចដើម្បីចាប់ផ្តើមថត'
-                        : 'Tap to start recording'),
+              _getStatusMessage(isKhmer),
               style: TextStyle(fontSize: 18, color: Colors.grey[700]),
             ),
-
-            if (_audioService.recordedFilePath != null &&
-                !_audioService.isRecording) ...[
-              const SizedBox(height: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Play/Pause button
-                  IconButton(
-                    iconSize: 48,
-                    icon: Icon(
-                      _audioService.isPlaying
-                          ? Icons.pause_circle
-                          : Icons.play_circle,
-                    ),
-                    onPressed: _audioService.togglePlayback,
-                    color: Colors.blue,
-                  ),
-                  const SizedBox(width: 20),
-                  // Stop button
-                  IconButton(
-                    iconSize: 48,
-                    icon: const Icon(Icons.stop_circle),
-                    onPressed: _audioService.stopPlayback,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(width: 20),
-                  // Delete button
-                  IconButton(
-                    iconSize: 48,
-                    icon: const Icon(Icons.delete),
-                    onPressed: _audioService.deleteRecording,
-                    color: Colors.red,
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _saveToHome,
-                icon: const Icon(Icons.text_snippet, size: 20),
-                label: const Text('Save to home'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 20,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

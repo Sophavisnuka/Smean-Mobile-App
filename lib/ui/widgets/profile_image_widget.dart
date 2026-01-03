@@ -35,7 +35,7 @@ class ProfileImageWidget extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Image.asset(
+          errorBuilder: (_, _, _) => Image.asset(
             'assets/images/Elite.png',
             width: size,
             height: size,
@@ -67,7 +67,7 @@ class ProfileImageWidget extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Image.asset(
+        errorBuilder: (_, _, _) => Image.asset(
           'assets/images/Elite.png',
           width: size,
           height: size,

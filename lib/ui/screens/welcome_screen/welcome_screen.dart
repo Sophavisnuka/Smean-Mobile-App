@@ -67,9 +67,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         }
       }
     } catch (e, stackTrace) {
-      print('Error initializing app: $e');
-      print('Stack trace: $stackTrace');
-      
+      debugPrint('Error initializing app: $e');
+      debugPrint('Stack trace: $stackTrace');
+
       // On error, just go to intro screen after delay
       await Future.delayed(Duration(seconds: 3));
       if (mounted) {
