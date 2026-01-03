@@ -145,12 +145,4 @@ class AuthRepository {
       )
     );
   }
-  
-  Future<void> editProfile(String userId,String newUsername) async {
-    await (db.update(db.users)..where((user) => user.id.equals(userId))).write(
-      UsersCompanion(
-        name: drift.Value(newUsername),
-      ),
-    );
-  }
 }
