@@ -7,25 +7,25 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class RecordAudioService {
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
-  
+
   Timer? _timer;
-  
+
   // State variables
   bool isRecording = false;
   Duration elapsed = Duration.zero;
   String? recordedFilePath;
-  
+
   bool isPlaying = false;
   Duration playPosition = Duration.zero;
   Duration totalDuration = Duration.zero;
-  
+
   // Callbacks for UI updates
   Function()? onStateChanged;
-  
+
   RecordAudioService() {
     _setupPlayerListeners();
   }
-  
+
   void _setupPlayerListeners() {
     // Listen when player state changes (playing/pause/stopped)
     _player.onPlayerStateChanged.listen((state) {
@@ -45,13 +45,13 @@ class RecordAudioService {
       onStateChanged?.call();
     });
   }
-  
+
   // Ask for microphone permission
   Future<bool> requestPermission() async {
     final ok = await _recorder.hasPermission();
     return ok;
   }
-  
+
   // Start recording audio
   Future<bool> startRecording() async {
     final hasPermission = await requestPermission();
@@ -62,7 +62,7 @@ class RecordAudioService {
       await _recorder.start(
         const RecordConfig(
           encoder: AudioEncoder.opus, // best for web
-        ), 
+        ),
         path: '',
       );
     } else {
@@ -86,10 +86,10 @@ class RecordAudioService {
       elapsed = Duration(seconds: timer.tick);
       onStateChanged?.call();
     });
-    
+
     return true;
   }
-  
+
   // Stop recording
   Future<void> stopRecording() async {
     _timer?.cancel();
@@ -97,9 +97,13 @@ class RecordAudioService {
 
     isRecording = false;
     recordedFilePath = pathOrUrl;
+
+    // Set total duration from recording elapsed time
+    totalDuration = elapsed;
+
     onStateChanged?.call();
   }
-  
+
   // Toggle playback (play/pause)
   Future<void> togglePlayback() async {
     if (recordedFilePath == null) return;
@@ -114,19 +118,19 @@ class RecordAudioService {
       }
     }
   }
-  
+
   // Stop playback
   Future<void> stopPlayback() async {
     await _player.stop();
     playPosition = Duration.zero;
     onStateChanged?.call();
   }
-  
+
   // Seek to a specific position
   Future<void> seekTo(Duration position) async {
     await _player.seek(position);
   }
-  
+
   // Delete the current recording
   Future<void> deleteRecording() async {
     await stopPlayback();
@@ -136,7 +140,7 @@ class RecordAudioService {
     totalDuration = Duration.zero;
     onStateChanged?.call();
   }
-  
+
   // Clean up resources
   void dispose() {
     _timer?.cancel();

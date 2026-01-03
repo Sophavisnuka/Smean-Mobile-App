@@ -1,22 +1,19 @@
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
+import 'package:smean_mobile_app/service/profile_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart' hide Card;
-import 'package:smean_mobile_app/ui/widgets/build_menu_item.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/data/models/user_class.dart';
 import 'package:smean_mobile_app/ui/widgets/show_confirm_dialog.dart';
 import 'package:smean_mobile_app/ui/widgets/profile_picker_sheet.dart';
-import 'package:smean_mobile_app/ui/widgets/profile_image_widget.dart';
+import 'package:smean_mobile_app/ui/widgets/profile/profile_header_widget.dart';
+import 'package:smean_mobile_app/ui/widgets/profile/settings_section.dart';
+import 'package:smean_mobile_app/ui/widgets/dialogs/text_input_dialog.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -26,60 +23,78 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  late AuthService _auth;
-  String username = '';
-  String email = '';
-  AppUser? currentUser; 
+  late AuthService _authService;
+  late ProfileService _profileService;
+  AppUser? currentUser;
 
   @override
   void didChangeDependencies() {
-    final db = Provider.of<AppDatabase>(context, listen: false);
     super.didChangeDependencies();
-    _auth = AuthService(db);
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    _authService = AuthService(db);
+    _profileService = ProfileService(db);
     _loadUser();
   }
 
   Future<void> _loadUser() async {
-    final db = Provider.of<AppDatabase>(context, listen: false);
-    final user = await AuthService(db).getCurrentUser();
-
-    setState(() {
-      currentUser = user;
-      username = user?.name ?? '';
-      email = user?.email ?? ''; 
-    });
+    final user = await _authService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        currentUser = user;
+      });
+    }
   }
 
   Future<void> _handleLogout() async {
-
-    final onConfirm = await showDialog<bool>(
-      context: context, 
-      builder: (builder) => ShowConfirmDialog(
-        cancelText: 'Cancel', 
-        confirmText: 'Confirm', 
-        titleText: 'Are you sure you want to log out?'
-      )
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
     );
-    if (onConfirm != true) return;
-    await _auth.logout();
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => ShowConfirmDialog(
+        cancelText: isKhmer ? 'បោះបង់' : 'Cancel',
+        confirmText: isKhmer ? 'បញ្ជាក់' : 'Confirm',
+        titleText: isKhmer
+            ? 'តើអ្នកប្រាកដថាចង់ចាកចេញទេ?'
+            : 'Are you sure you want to log out?',
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    await _authService.logout();
     if (!mounted) return;
-    CustomSnackBar.success(context, 'Log out successful');
+
+    CustomSnackBar.success(
+      context,
+      isKhmer ? 'ចាកចេញបានជោគជ័យ' : 'Log out successful',
+    );
     Navigator.pushReplacementNamed(context, '/login');
   }
 
   Future<void> _handleDeleteAccount() async {
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => ShowConfirmDialog(
-        cancelText: 'Cancel', 
-        confirmText: 'Confirm', 
-        titleText: 'Are you sure you want to delete this account?'
-      )
+        cancelText: isKhmer ? 'បោះបង់' : 'Cancel',
+        confirmText: isKhmer ? 'បញ្ជាក់' : 'Confirm',
+        titleText: isKhmer
+            ? 'តើអ្នកប្រាកដថាចង់លុបគណនីនេះទេ?'
+            : 'Are you sure you want to delete this account?',
+      ),
     );
 
     if (confirmed == true) {
-      // Add your delete account logic here
-      // await _auth.deleteAccount();
+      // TODO: Implement delete account logic
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
     }
@@ -87,132 +102,139 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> _editUsername() async {
     if (currentUser == null) return;
-    
-    final newUsername = await showDialog<String>(
-      context: context,
-      builder: (_) => ShowInputDialog(
-        titleText: 'Edit Username', 
-        hintText: 'Enter a new username',
-        initialValue: currentUser!.name,
-      ),
+
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
+    final newUsername = await TextInputDialog.show(
+      context,
+      title: isKhmer ? 'កែប្រែឈ្មោះអ្នកប្រើ' : 'Edit Username',
+      hintText: isKhmer ? 'បញ្ចូលឈ្មោះថ្មី' : 'Enter a new username',
+      initialValue: currentUser!.name,
     );
 
-    if (newUsername != null && newUsername.isNotEmpty && newUsername != currentUser!.name) {
-      try {
-        final db = Provider.of<AppDatabase>(context, listen: false);
-        await AuthService(db).repo.editUsername(currentUser!.id, newUsername);
-        
-        setState(() {
-          username = newUsername;
-        });
+    if (newUsername != null &&
+        newUsername.isNotEmpty &&
+        newUsername != currentUser!.name) {
+      final success = await _profileService.updateUsername(
+        currentUser!.id,
+        newUsername,
+      );
 
-        if (!mounted) return;
-        CustomSnackBar.success(context, 'Username change successful');
-      } catch (e) {
-        if (!mounted) return;
-        CustomSnackBar.error(context, 'Failed to change username, try again!');
+      if (!mounted) return;
+
+      if (success) {
+        await _loadUser();
+        CustomSnackBar.success(
+          context,
+          isKhmer ? 'ផ្លាស់ប្តូរឈ្មោះបានជោគជ័យ' : 'Username change successful',
+        );
+      } else {
+        CustomSnackBar.error(
+          context,
+          isKhmer
+              ? 'បរាជ័យក្នុងការផ្លាស់ប្តូរឈ្មោះ សូមព្យាយាមម្តងទៀត!'
+              : 'Failed to change username, try again!',
+        );
       }
     }
   }
 
-  Future<void> changeProfilePicture() async {
+  Future<void> _changeProfilePicture() async {
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     final hasPhoto = currentUser?.imagePath != null;
 
     await showModalBottomSheet(
-      context: context, 
+      context: context,
       builder: (context) => ProfilePictureSheet(
-        isKhmer: isKhmer, 
-        hasPhoto: hasPhoto, 
+        isKhmer: isKhmer,
+        hasPhoto: hasPhoto,
         onTakePhoto: () {
           Navigator.pop(context);
-          pickImage(ImageSource.camera);
+          _pickImage(ImageSource.camera);
         },
         onChooseGallery: () {
           Navigator.pop(context);
-          pickImage(ImageSource.gallery);
+          _pickImage(ImageSource.gallery);
         },
         onRemovePhoto: () {
           Navigator.pop(context);
           _removeProfilePicture();
         },
-      )
+      ),
     );
   }
-  
-  Future<void> _removeProfilePicture() async {
-    try {
-      // Delete file if exists (mobile only)
-      if (!kIsWeb && currentUser?.imagePath != null) {
-        final imagePath = currentUser!.imagePath!;
-        if (!imagePath.startsWith('data:image')) {
-          final file = File(imagePath);
-          if (await file.exists()) {
-            await file.delete();
-          }
-        }
-      }
 
-      // Update database - set to null to remove
-      final db = Provider.of<AppDatabase>(context, listen: false);
-      await AuthService(db).repo.editProfile(currentUser!.id, null);
+  Future<void> _pickImage(ImageSource source) async {
+    if (currentUser == null) return;
+
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
+    final result = await _profileService.pickAndSaveImage(
+      currentUser!.id,
+      source,
+    );
+
+    if (!mounted) return;
+
+    if (result.success) {
       await _loadUser();
-
-      if (!mounted) return;
-      CustomSnackBar.success(context, 'Profile Remove');
-    } catch (e) {
-      if (!mounted) return;
-      CustomSnackBar.error(context, 'Error: $e');
-    }
-  }
-
-  Future<void> pickImage(ImageSource source) async {
-    try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
-        imageQuality: 85,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        source: source
+      CustomSnackBar.success(
+        context,
+        isKhmer
+            ? 'ធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូបបានជោគជ័យ'
+            : 'Profile update successful',
       );
-      
-      if (pickedFile == null) {
-        // User cancelled - this is normal, don't show error
-        return;
-      }
-      
-      String imageData;
-
-      if (kIsWeb) {
-        final bytes = await pickedFile.readAsBytes();
-        imageData = 'data:image/${pickedFile.path.split('.').last};base64,${base64Encode(bytes)}';
-      } else {
-        // Save to app directory
-        final appDir = await getApplicationDocumentsDirectory();
-        final profileDir = Directory('${appDir.path}/profile_pictures');
-        if (!await profileDir.exists()) {
-          await profileDir.create(recursive: true);
-        }
-        final fileName = 'profile_${currentUser!.id}${path.extension(pickedFile.path)}';
-        final saveImage = File('${profileDir.path}/$fileName');
-        await File(pickedFile.path).copy(saveImage.path);
-        imageData = saveImage.path;
-      }
-      
-      final db = Provider.of<AppDatabase>(context, listen: false);
-      await AuthService(db).repo.editProfile(currentUser!.id, imageData);
-      await _loadUser(); // Reload user data
-
-      if (!mounted) return;
-      CustomSnackBar.success(context, 'Profile update successful');
-    } catch (e) {
-      if (!mounted) return;
-      print('Error picking image: $e'); // For debugging
-      CustomSnackBar.error(context, 'Failed to update the profile');
+    } else if (!result.cancelled) {
+      CustomSnackBar.error(
+        context,
+        isKhmer
+            ? 'បរាជ័យក្នុងការធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូប'
+            : 'Failed to update the profile',
+      );
     }
   }
 
-  LanguageProvider get languageProvider => Provider.of<LanguageProvider>(context, listen: false);
+  Future<void> _removeProfilePicture() async {
+    if (currentUser == null) return;
+
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
+    final success = await _profileService.removeProfilePicture(
+      currentUser!.id,
+      currentUser!.imagePath,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      await _loadUser();
+      CustomSnackBar.success(
+        context,
+        isKhmer ? 'យករូបភាពចេញបានជោគជ័យ' : 'Profile removed successfully',
+      );
+    } else {
+      CustomSnackBar.error(
+        context,
+        isKhmer ? 'មានកំហុស' : 'Error removing profile',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -233,122 +255,39 @@ class _AccountScreenState extends State<AccountScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 40),
-            
-            // Profile Picture
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
-                  width: 3,
-                ),
-              ),
-              child: GestureDetector(
-                onTap: changeProfilePicture,
-                child: Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primary.withOpacity(0.3),
-                          width: 3,
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: ProfileImageWidget(
-                          imagePath: currentUser?.imagePath,
-                          size: 100,
-                        ),
-                      )
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: CircleAvatar(
-                        backgroundColor: AppColors.primary,
-                        radius: 18,
-                        child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              )
+            // Profile Header
+            ProfileHeaderWidget(
+              imagePath: currentUser?.imagePath,
+              username: currentUser?.name ?? '',
+              email: currentUser?.email ?? '',
+              onImageTap: _changeProfilePicture,
             ),
-            
-            const SizedBox(height: 16),
-            
-            // Username
-            Text(
-              username,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            
-            const SizedBox(height: 4),
-            
-            // Email
-            Text(
-              email,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            
-            const SizedBox(height: 32),
-            
+
             // Account Settings Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 8),
-                    child: Text(
-                      isKhmer ? 'ការកំណត់គណនី' : 'Account Settings',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ),
-                  
-                  // Edit Profile
-                  BuildMenuItem(
-                    icon: Icons.edit_outlined,
-                    title: isKhmer ? 'កែប្រែប្រវត្តិ' : 'Edit Username',
-                    iconColor: AppColors.primary,
-                    onTap: _editUsername,
-                  ),
-                  
-                  const Divider(height: 1),
-                  
-                  // Logout
-                  BuildMenuItem(
-                    icon: Icons.logout,
-                    title: isKhmer ? 'ចាកចេញ' : 'Logout',
-                    iconColor: Colors.orange,
-                    onTap: _handleLogout,
-                  ),
-                  
-                  const Divider(height: 1),
-                  
-                  // Delete Account
-                  BuildMenuItem(
-                    icon: Icons.delete_outline,
-                    title: isKhmer ? 'លុបគណនី' : 'Delete Account',
-                    iconColor: Colors.red,
-                    onTap: _handleDeleteAccount,
-                  ),
-                ],
-              ),
+            SettingsSection(
+              title: isKhmer ? 'ការកំណត់គណនី' : 'Account Settings',
+              items: [
+                SettingsMenuItem(
+                  icon: Icons.edit_outlined,
+                  title: isKhmer ? 'កែប្រែប្រវត្តិ' : 'Edit Username',
+                  iconColor: AppColors.primary,
+                  onTap: _editUsername,
+                ),
+                SettingsMenuItem(
+                  icon: Icons.logout,
+                  title: isKhmer ? 'ចាកចេញ' : 'Logout',
+                  iconColor: Colors.orange,
+                  onTap: _handleLogout,
+                ),
+                SettingsMenuItem(
+                  icon: Icons.delete_outline,
+                  title: isKhmer ? 'លុបគណនី' : 'Delete Account',
+                  iconColor: Colors.red,
+                  onTap: _handleDeleteAccount,
+                ),
+              ],
             ),
+
             const SizedBox(height: 40),
           ],
         ),

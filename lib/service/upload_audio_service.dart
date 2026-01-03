@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:smean_mobile_app/core/constants/app_constants.dart';
 import 'web_utils_stub.dart' if (dart.library.html) 'web_utils_web.dart';
 
 class UploadAudioService {
@@ -52,7 +54,7 @@ class UploadAudioService {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac'],
+        allowedExtensions: AppConstants.supportedAudioExtensionsForPicker,
         allowMultiple: false,
       );
 
@@ -240,6 +242,40 @@ class UploadAudioService {
       return '${(fileSize! / 1024).toStringAsFixed(2)} KB';
     } else {
       return '${(fileSize! / (1024 * 1024)).toStringAsFixed(2)} MB';
+    }
+  }
+
+  /// Process a dropped file (handle file copying and loading)
+  Future<bool> processDroppedFile(XFile file) async {
+    try {
+      if (kIsWeb) {
+        uploadedFilePath = file.path;
+        fileName = file.name;
+        fileSize = await file.length();
+      } else {
+        // Mobile/Desktop: copy file to app documents directory for persistence
+        final ioFile = File(file.path);
+        final directory = await getApplicationDocumentsDirectory();
+        final fileExtension = path.extension(file.name);
+        final newFileName =
+            'upload_${DateTime.now().millisecondsSinceEpoch}$fileExtension';
+        final newPath = path.join(directory.path, newFileName);
+
+        // Copy the file
+        final copiedFile = await ioFile.copy(newPath);
+
+        uploadedFilePath = copiedFile.path;
+        fileName = file.name;
+        fileSize = await copiedFile.length();
+      }
+
+      // Load audio to get duration
+      await loadAudio();
+
+      onStateChanged?.call();
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }
