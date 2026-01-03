@@ -11,6 +11,7 @@ class RecentActivityCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onFavoriteToggle;
+  final VoidCallback? onRefresh;
   final String? searchQuery;
 
   const RecentActivityCard({
@@ -20,6 +21,7 @@ class RecentActivityCard extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onFavoriteToggle,
+    this.onRefresh,
     this.searchQuery,
   });
 
@@ -73,12 +75,17 @@ class RecentActivityCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
+        onTap: () async {
+          final deleted = await Navigator.of(context).push<bool>(
             MaterialPageRoute(
               builder: (context) => AudioDetailsScreen(card: card),
             ),
           );
+
+          // If the card was deleted in the details screen, refresh the list
+          if (deleted == true && onRefresh != null) {
+            onRefresh!();
+          }
         },
         borderRadius: BorderRadius.circular(10),
         child: Padding(
