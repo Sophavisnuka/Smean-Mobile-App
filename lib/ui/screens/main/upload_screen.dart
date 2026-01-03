@@ -5,12 +5,11 @@ import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/core/utils/file_validation_util.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/loading_dialog.dart';
-import 'package:smean_mobile_app/ui/widgets/dialogs/title_input_dialog.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/ui/widgets/upload/upload_area_widget.dart';
 import 'package:smean_mobile_app/ui/widgets/upload/upload_progress_view.dart';
 import 'package:smean_mobile_app/service/upload_audio_service.dart';
-import 'package:smean_mobile_app/ui/widgets/audio_file_preview_dialog.dart';
+import 'package:smean_mobile_app/ui/widgets/dialogs/audio_preview_dialog.dart';
 import 'package:smean_mobile_app/data/repository/audio_repository.dart';
 import 'package:smean_mobile_app/service/transcript_service.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
@@ -168,25 +167,30 @@ class _UploadScreenState extends State<UploadScreen> {
     );
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
 
+    // Get initial title from file name without extension
+    final initialTitle =
+        _uploadService.fileName?.replaceAll(RegExp(r'\.[^.]+$'), '') ?? '';
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AudioFilePreviewDialog(
+      builder: (context) => AudioPreviewDialog(
         audioService: _uploadService,
         isKhmer: isKhmer,
+        initialTitle: initialTitle,
         onCancel: () {
           _uploadService.clearFile();
           Navigator.of(context).pop();
         },
-        onConfirm: () {
+        onConfirm: (title) async {
           Navigator.of(context).pop();
-          _confirmUpload();
+          await _confirmUpload(title);
         },
       ),
     );
   }
 
-  Future<void> _confirmUpload() async {
+  Future<void> _confirmUpload(String title) async {
     if (_uploadService.uploadedFilePath == null) return;
 
     final languageProvider = Provider.of<LanguageProvider>(
@@ -194,20 +198,6 @@ class _UploadScreenState extends State<UploadScreen> {
       listen: false,
     );
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
-
-    // Ask for title using the reusable dialog
-    final initialTitle =
-        _uploadService.fileName?.replaceAll(RegExp(r'\.[^.]+$'), '') ?? '';
-    final title = await TitleInputDialog.show(
-      context,
-      isKhmer: isKhmer,
-      initialValue: initialTitle,
-    );
-
-    if (title == null) {
-      _uploadService.clearFile();
-      return;
-    }
 
     // Show loading
     setState(() {

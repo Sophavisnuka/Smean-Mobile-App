@@ -6,24 +6,35 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:smean_mobile_app/core/constants/app_constants.dart';
+import 'package:smean_mobile_app/service/base_audio_service.dart';
 import 'web_utils_stub.dart' if (dart.library.html) 'web_utils_web.dart';
 
-class UploadAudioService {
+class UploadAudioService implements BaseAudioService {
   final AudioPlayer _player = AudioPlayer();
 
   // State variables
   String? uploadedFilePath;
+  @override
   String? fileName;
+  @override
   int? fileSize; // in bytes
+  @override
   bool isPlaying = false;
+  @override
   Duration playPosition = Duration.zero;
+  @override
   Duration totalDuration = Duration.zero;
 
   // Temporary storage for picked file before processing
   FilePickerResult? _pickedFileResult;
 
   // Callbacks for UI updates
+  @override
   Function()? onStateChanged;
+
+  // Get file path
+  @override
+  String? get filePath => uploadedFilePath;
 
   UploadAudioService() {
     _setupPlayerListeners();
@@ -189,6 +200,7 @@ class UploadAudioService {
   }
 
   /// Toggle play/pause
+  @override
   Future<void> togglePlayback() async {
     if (uploadedFilePath == null) return;
 
@@ -205,6 +217,7 @@ class UploadAudioService {
   }
 
   /// Stop playback
+  @override
   Future<void> stopPlayback() async {
     await _player.stop();
     playPosition = Duration.zero;
@@ -212,6 +225,7 @@ class UploadAudioService {
   }
 
   /// Seek to a specific position
+  @override
   Future<void> seekTo(Duration position) async {
     await _player.seek(position);
   }
@@ -228,11 +242,13 @@ class UploadAudioService {
   }
 
   /// Dispose resources
+  @override
   void dispose() {
     _player.dispose();
   }
 
   /// Format file size for display
+  @override
   String getFormattedFileSize() {
     if (fileSize == null) return '';
 
