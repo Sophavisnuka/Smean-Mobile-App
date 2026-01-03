@@ -58,6 +58,7 @@ class SearchScreenState extends State<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: Text(isKhmer ? 'ស្វែងរក' : 'Search'),
         actions: const [
           Padding(

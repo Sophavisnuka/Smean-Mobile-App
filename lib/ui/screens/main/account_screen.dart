@@ -37,6 +37,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: Text(isKhmer ? 'គណនី' : 'Account'),
         actions: const [
           Padding(

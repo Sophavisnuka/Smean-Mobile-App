@@ -159,6 +159,7 @@ class _RecordScreenState extends State<RecordScreen> {
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: Text(isKhmer ? 'កំណត់ត្រា' : 'Record'),
         actions: const [
           Padding(
