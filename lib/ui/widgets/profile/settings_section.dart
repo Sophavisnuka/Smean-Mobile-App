@@ -43,7 +43,7 @@ class SettingsSection extends StatelessWidget {
                 if (index < items.length - 1) const Divider(height: 1),
               ],
             );
-          }).toList(),
+          }),
         ],
       ),
     );

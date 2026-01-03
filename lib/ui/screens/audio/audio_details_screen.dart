@@ -79,6 +79,8 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
     );
 
     if (confirm == true) {
+      if (!mounted) return;
+
       try {
         final db = Provider.of<AppDatabase>(context, listen: false);
         final audioRepo = AudioRepository(db);

@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:smean_mobile_app/data/database/database.dart';
+import 'package:smean_mobile_app/data/models/profile_image_result.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 
 /// Service for managing user profile operations including image handling
@@ -108,19 +109,4 @@ class ProfileService {
       return false;
     }
   }
-}
-
-/// Result object for profile image operations
-class ProfileImageResult {
-  final bool success;
-  final bool cancelled;
-  final String? imagePath;
-  final String? error;
-
-  ProfileImageResult({
-    required this.success,
-    this.cancelled = false,
-    this.imagePath,
-    this.error,
-  });
 }

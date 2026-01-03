@@ -128,6 +128,8 @@ class _AccountScreenState extends State<AccountScreen> {
 
       if (success) {
         await _loadUser();
+        if (!mounted) return;
+
         CustomSnackBar.success(
           context,
           isKhmer ? 'ផ្លាស់ប្តូរឈ្មោះបានជោគជ័យ' : 'Username change successful',
@@ -190,6 +192,8 @@ class _AccountScreenState extends State<AccountScreen> {
 
     if (result.success) {
       await _loadUser();
+      if (!mounted) return;
+
       CustomSnackBar.success(
         context,
         isKhmer
@@ -224,6 +228,8 @@ class _AccountScreenState extends State<AccountScreen> {
 
     if (success) {
       await _loadUser();
+      if (!mounted) return;
+
       CustomSnackBar.success(
         context,
         isKhmer ? 'យករូបភាពចេញបានជោគជ័យ' : 'Profile removed successfully',

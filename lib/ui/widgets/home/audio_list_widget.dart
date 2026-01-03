@@ -27,7 +27,7 @@ class AudioListWidget extends StatelessWidget {
       itemCount: cards.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      separatorBuilder: (_, __) => const SizedBox(height: 15),
+      separatorBuilder: (_, _) => const SizedBox(height: 15),
       itemBuilder: (context, index) {
         final card = cards[index];
         return RecentActivityCard(

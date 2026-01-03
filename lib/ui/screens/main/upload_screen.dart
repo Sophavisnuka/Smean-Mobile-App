@@ -70,6 +70,8 @@ class _UploadScreenState extends State<UploadScreen> {
       return;
     }
 
+    if (!mounted) return;
+
     // Now show loading overlay while processing the selected file
     LoadingDialog.show(
       context,
@@ -81,6 +83,8 @@ class _UploadScreenState extends State<UploadScreen> {
 
     // Close loading dialog
     if (mounted) LoadingDialog.hide(context);
+
+    if (!mounted) return;
 
     if (success) {
       // Verify we have the required data
@@ -138,6 +142,8 @@ class _UploadScreenState extends State<UploadScreen> {
 
       // Verify we have the required data
       if (_uploadService.totalDuration.inSeconds == 0) {
+        if (!mounted) return;
+
         CustomSnackBar.error(
           context,
           isKhmer
@@ -152,6 +158,8 @@ class _UploadScreenState extends State<UploadScreen> {
     } catch (e) {
       // Close loading dialog
       if (mounted) LoadingDialog.hide(context);
+
+      if (!mounted) return;
 
       CustomSnackBar.error(
         context,

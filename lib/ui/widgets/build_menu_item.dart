@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 class BuildMenuItem extends StatelessWidget {
-  const BuildMenuItem({super.key, required this.icon, required this.iconColor, required this.title, required this.onTap});
+  const BuildMenuItem({
+    super.key,
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.onTap,
+  });
   final IconData icon;
   final String title;
   final Color iconColor;
@@ -21,14 +27,10 @@ class BuildMenuItem extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 22,
-                ),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -40,10 +42,7 @@ class BuildMenuItem extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.chevron_right, color: Colors.grey[400]),
             ],
           ),
         ),

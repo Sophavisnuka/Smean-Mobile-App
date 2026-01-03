@@ -190,7 +190,7 @@ class _CountdownSnackBarContentState extends State<_CountdownSnackBarContent>
           builder: (context, child) {
             return LinearProgressIndicator(
               value: 1.0 - _controller.value,
-              backgroundColor: Colors.white.withOpacity(0.3),
+              backgroundColor: Colors.white.withValues(alpha: 0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
               minHeight: 3,
             );
