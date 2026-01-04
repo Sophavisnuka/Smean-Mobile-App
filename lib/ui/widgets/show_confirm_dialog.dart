@@ -47,6 +47,7 @@ class ShowInputDialog extends StatefulWidget {
 
 class _ShowInputDialogState extends State<ShowInputDialog> {
   late TextEditingController _controller;
+  String? _errorText;
 
   @override
   void initState() {
@@ -71,7 +72,15 @@ class _ShowInputDialogState extends State<ShowInputDialog> {
         decoration: InputDecoration(
           hintText: widget.hintText,
           border: const OutlineInputBorder(),
+          errorText: _errorText,
         ),
+        onChanged: (value) {
+          if (_errorText != null && value.trim().isNotEmpty) {
+            setState(() {
+              _errorText = null;
+            });
+          }
+        },
       ),
       actions: [
         TextButton(
@@ -81,7 +90,12 @@ class _ShowInputDialogState extends State<ShowInputDialog> {
         ElevatedButton(
           onPressed: () {
             final text = _controller.text.trim();
-            if (text.isEmpty) return;
+            if (text.isEmpty) {
+              setState(() {
+                _errorText = "Title can't be empty";
+              });
+              return;
+            }
             Navigator.pop(context, text);
           },
           child: Text(widget.confirmText),

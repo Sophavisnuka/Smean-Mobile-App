@@ -145,4 +145,7 @@ class AuthRepository {
       )
     );
   }
+  Future<void> deleteUser(String userId) async {
+    await (db.delete(db.users)..where((user) => user.id.equals(userId))).go();
+  }
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smean_mobile_app/core/route/app_routes.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
+import 'package:smean_mobile_app/core/utils/validation.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
+import 'package:smean_mobile_app/ui/widgets/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +16,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -50,18 +54,18 @@ class _LoginScreenState extends State<LoginScreen>
     if (!mounted) return;
 
     if (user != null) {
-      Navigator.pushReplacementNamed(context, '/main');
+      AppRoutes.navigateToMain(context);
     }
   }
 
   Future<void> _handleLogin() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email.isEmpty || password.isEmpty) {
-      CustomSnackBar.warning(context, 'Please enter email and password');
+    // Validate form
+    if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
     setState(() => _loading = true);
 
@@ -73,10 +77,11 @@ class _LoginScreenState extends State<LoginScreen>
     final ok = result.$1;
     final msg = result.$2;
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-
     if (ok) {
-      Navigator.pushReplacementNamed(context, '/main');
+      CustomSnackBar.success(context, msg);
+      AppRoutes.navigateToMain(context);
+    } else {
+      CustomSnackBar.error(context, msg);
     }
   }
 
@@ -166,78 +171,35 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ],
                       ),
-                      child: Column(
-                        children: [
-                          // Email Field
-                          TextField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            // Email Field
+                            CustomTextField(
+                              controller: _emailController,
                               labelText: 'Email',
                               hintText: 'Enter your email',
-                              prefixIcon: const Icon(Icons.email_outlined),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Theme.of(context).primaryColor,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
+                              prefixIcon: Icons.email_outlined,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: Validation.validateEmail,
                             ),
-                          ),
-                          const SizedBox(height: 20),
+                            const SizedBox(height: 20),
 
-                          // Password Field
-                          TextField(
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            decoration: InputDecoration(
+                            // Password Field
+                            CustomTextField(
+                              controller: _passwordController,
                               labelText: 'Password',
                               hintText: 'Enter your password',
-                              prefixIcon: const Icon(Icons.lock_outlined),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off_outlined,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Theme.of(context).primaryColor,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
+                              prefixIcon: Icons.lock_outlined,
+                              obscureText: _obscurePassword,
+                              validator: Validation.validatePassword,
+                              onToggleObscure: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
                             ),
-                          ),
                           const SizedBox(height: 24),
 
                           // Login Button
@@ -271,8 +233,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                   ),
                             ),
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -289,10 +252,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pushReplacementNamed(
-                              context,
-                              '/register',
-                            );
+                            AppRoutes.navigateToRegister(context);
                           },
                           child: const Text(
                             'Sign Up',

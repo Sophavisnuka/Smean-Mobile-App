@@ -17,7 +17,7 @@ class ProfileImageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (imagePath == null || imagePath!.isEmpty) {
       return Image.asset(
-        'assets/images/Elite.png',
+        'assets/images/placeholder.png',
         width: size,
         height: size,
         fit: BoxFit.cover,
@@ -35,8 +35,8 @@ class ProfileImageWidget extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => Image.asset(
-            'assets/images/Elite.png',
+          errorBuilder: (_, __, ___) => Image.asset(
+            'assets/images/placeholder.png',
             width: size,
             height: size,
             fit: BoxFit.cover,
@@ -44,7 +44,7 @@ class ProfileImageWidget extends StatelessWidget {
         );
       } catch (e) {
         return Image.asset(
-          'assets/images/Elite.png',
+          'assets/images/placeholder.png',
           width: size,
           height: size,
           fit: BoxFit.cover,
@@ -55,7 +55,7 @@ class ProfileImageWidget extends StatelessWidget {
       if (kIsWeb) {
         // Fallback for web if path doesn't start with data:image
         return Image.asset(
-          'assets/images/Elite.png',
+          'assets/images/placeholder.png',
           width: size,
           height: size,
           fit: BoxFit.cover,
@@ -64,11 +64,12 @@ class ProfileImageWidget extends StatelessWidget {
 
       return Image.file(
         File(imagePath!),
+        key: ValueKey(imagePath), // Force refresh when path changes
         width: size,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => Image.asset(
-          'assets/images/Elite.png',
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/placeholder.png',
           width: size,
           height: size,
           fit: BoxFit.cover,

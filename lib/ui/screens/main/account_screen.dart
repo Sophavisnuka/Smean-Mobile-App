@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
+import 'package:smean_mobile_app/core/route/app_routes.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/service/profile_service.dart';
@@ -94,9 +95,16 @@ class _AccountScreenState extends State<AccountScreen> {
     );
 
     if (confirmed == true) {
-      // TODO: Implement delete account logic
+      final (ok, message) = await _authService.deleteUserAccount(currentUser!.id);
+      
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/login');
+      
+      if (ok) {
+        CustomSnackBar.success(context, message);
+        AppRoutes.navigateToLogin(context);
+      } else {
+        CustomSnackBar.error(context, message);
+      }
     }
   }
 
@@ -191,6 +199,12 @@ class _AccountScreenState extends State<AccountScreen> {
     if (!mounted) return;
 
     if (result.success) {
+      
+      // Force immediate UI update
+      setState(() {
+        currentUser = currentUser!.copyWith(imagePath: null);
+      });
+      
       await _loadUser();
       if (!mounted) return;
 

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:smean_mobile_app/core/route/app_routes.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
-import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
 class IntroScreen extends StatelessWidget {
@@ -70,9 +70,7 @@ class IntroScreen extends StatelessWidget {
   void _completeIntro(BuildContext context) async {
     await _markIntroAsSeen(context);
     if (context.mounted) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (context) => LoginScreen()));
+      AppRoutes.navigateToLogin(context);
     }
   }
 

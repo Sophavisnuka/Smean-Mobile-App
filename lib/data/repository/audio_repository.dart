@@ -10,26 +10,6 @@ class AudioRepository {
 
   AudioRepository(this.db);
 
-  // Future<void> convertDbToModelObject() async {
-  //   final audio = audioData != null
-  //         ? AudioRecord(
-  //             audioId: audioData.id,
-  //             filePath: audioData.filePath,
-  //             audioTitle: card.cardName,
-  //             createdAt: audioData.createdAt,
-  //             duration: audioData.duration,
-  //             isFavorite: card.isFavorite,
-  //           )
-  //         : null;
-
-  //     final transcript = transcriptData != null
-  //         ? TranscriptClass(
-  //             transcriptId: transcriptData.id,
-  //             text: transcriptData.transcriptionText,
-  //             audioId: audioData?.id ?? '',
-  //           )
-  //         : null;
-  // }
   /// Get all cards for a specific user (with audio and transcript info)
   Future<List<CardModel>> getCardsForUser(String userId) async {
     final query = db.select(db.cards)
