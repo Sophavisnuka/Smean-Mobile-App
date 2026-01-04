@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
+import 'package:smean_mobile_app/core/route/app_routes.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart' hide Card;
@@ -64,10 +65,12 @@ class _AccountScreenState extends State<AccountScreen> {
     await _auth.logout();
     if (!mounted) return;
     CustomSnackBar.success(context, 'Log out successful');
-    Navigator.pushReplacementNamed(context, '/login');
+    AppRoutes.navigateToLogin(context);
   }
 
   Future<void> _handleDeleteAccount() async {
+    if (currentUser == null) return;
+    
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => ShowConfirmDialog(
@@ -78,10 +81,16 @@ class _AccountScreenState extends State<AccountScreen> {
     );
 
     if (confirmed == true) {
-      // Add your delete account logic here
-      // await _auth.deleteAccount();
+      final (ok, message) = await _auth.deleteUserAccount(currentUser!.id);
+      
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/login');
+      
+      if (ok) {
+        CustomSnackBar.success(context, message);
+        AppRoutes.navigateToLogin(context);
+      } else {
+        CustomSnackBar.error(context, message);
+      }
     }
   }
 
@@ -156,6 +165,12 @@ class _AccountScreenState extends State<AccountScreen> {
       // Update database - set to null to remove
       final db = Provider.of<AppDatabase>(context, listen: false);
       await AuthService(db).repo.editProfile(currentUser!.id, null);
+      
+      // Force immediate UI update
+      setState(() {
+        currentUser = currentUser!.copyWith(imagePath: null);
+      });
+      
       await _loadUser();
 
       if (!mounted) return;
@@ -201,7 +216,13 @@ class _AccountScreenState extends State<AccountScreen> {
       
       final db = Provider.of<AppDatabase>(context, listen: false);
       await AuthService(db).repo.editProfile(currentUser!.id, imageData);
-      await _loadUser(); // Reload user data
+      
+      // Force immediate UI update
+      setState(() {
+        currentUser = currentUser!.copyWith(imagePath: imageData);
+      });
+      
+      await _loadUser(); // Reload user data from database
 
       if (!mounted) return;
       CustomSnackBar.success(context, 'Profile update successful');

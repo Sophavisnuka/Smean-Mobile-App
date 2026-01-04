@@ -3,11 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
+import 'package:smean_mobile_app/core/route/app_routes.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
-import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
-import 'package:smean_mobile_app/ui/screens/register_login_screen/register_screen.dart';
-import 'package:smean_mobile_app/ui/screens/main/main_screen.dart';
-import 'package:smean_mobile_app/ui/screens/welcome_screen/welcome_screen.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized first
@@ -42,15 +39,10 @@ class SmeanApp extends StatelessWidget {
         : GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme);
 
     return MaterialApp(
-      // Remove initialRoute, let WelcomeScreen handle routing logic
-      routes: {
-        '/splash': (context) => const WelcomeScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/main': (context) => const MainScreen(),
-      },
       title: "SMEAN",
       debugShowCheckedModeBanner: false,
+      initialRoute: AppRoutes.splash,
+      routes: AppRoutes.routes,
       locale: languageProvider.currentLocale,
       theme: ThemeData(
         useMaterial3: true,
@@ -78,8 +70,6 @@ class SmeanApp extends StatelessWidget {
         // 2. Set Default Font (Poppins for English, Kantumruy Pro for Khmer)
         textTheme: currentTextTheme,
       ),
-      // Always start with WelcomeScreen, it will decide where to go
-      home: const WelcomeScreen(),
     );
   }
 }

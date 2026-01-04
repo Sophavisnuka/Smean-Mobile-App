@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'intro_screen.dart';
-import 'package:smean_mobile_app/ui/screens/register_login_screen/login_screen.dart';
-import 'package:smean_mobile_app/ui/screens/main/main_screen.dart';
+import 'package:smean_mobile_app/core/route/app_routes.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
 
@@ -49,9 +48,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       if (mounted) {
         // Priority 1: If user is already logged in, go straight to main
         if (currentUser != null) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => MainScreen()),
-          );
+          AppRoutes.navigateToMain(context);
         }
         // Priority 2: First time user, show intro screens
         else if (isFirstTime) {
@@ -61,9 +58,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         }
         // Priority 3: Returning user but not logged in, show login
         else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => LoginScreen()),
-          );
+          AppRoutes.navigateToLogin(context);
         }
       }
     } catch (e, stackTrace) {

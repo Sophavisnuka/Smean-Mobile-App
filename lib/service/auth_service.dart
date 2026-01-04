@@ -52,6 +52,7 @@ class AuthService {
       email: normalizedEmail,
       passwordHash: _hashPassword(password),
       createdAt: DateTime.now(),
+      imagePath: null, // Default avatar placeholder
     );
 
     await _repo.createUser(user);
@@ -74,5 +75,27 @@ class AuthService {
 
     await _repo.setCurrentUserId(user.id);
     return (true, 'Login successful.');
+  }
+
+  Future<(bool ok, String message)> deleteUserAccount(String userId) async {
+    final currentUserId = await _repo.getCurrentUserId();
+    
+    // Verify the user is deleting their own account
+    if (currentUserId != userId) {
+      return (false, 'Unauthorized: Cannot delete another user\'s account.');
+    }
+
+    final user = await _repo.getUserById(userId);
+    if (user == null) {
+      return (false, 'User not found.');
+    }
+
+    // Clear current user session first
+    await _repo.clearCurrentUser();
+    
+    // Delete the user from database
+    await _repo.deleteUser(userId);
+    
+    return (true, 'Account deleted successfully.');
   }
 }

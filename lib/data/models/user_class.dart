@@ -32,4 +32,22 @@ class AppUser {
     createdAt: DateTime.parse(json["createdAt"]),
     imagePath: json["imagePath"]
   );
+
+  AppUser copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? passwordHash,
+    DateTime? createdAt,
+    String? imagePath,
+  }) {
+    return AppUser(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      passwordHash: passwordHash ?? this.passwordHash,
+      createdAt: createdAt ?? this.createdAt,
+      imagePath: imagePath ?? this.imagePath,
+    );
+  }
 }
