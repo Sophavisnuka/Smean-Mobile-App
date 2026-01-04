@@ -1,27 +1,40 @@
 import 'dart:io';
+import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:smean_mobile_app/core/constants/app_constants.dart';
+import 'package:smean_mobile_app/service/base_audio_service.dart';
 import 'web_utils_stub.dart' if (dart.library.html) 'web_utils_web.dart';
 
-class UploadAudioService {
+class UploadAudioService implements BaseAudioService {
   final AudioPlayer _player = AudioPlayer();
 
   // State variables
   String? uploadedFilePath;
+  @override
   String? fileName;
+  @override
   int? fileSize; // in bytes
+  @override
   bool isPlaying = false;
+  @override
   Duration playPosition = Duration.zero;
+  @override
   Duration totalDuration = Duration.zero;
 
   // Temporary storage for picked file before processing
   FilePickerResult? _pickedFileResult;
 
   // Callbacks for UI updates
+  @override
   Function()? onStateChanged;
+
+  // Get file path
+  @override
+  String? get filePath => uploadedFilePath;
 
   UploadAudioService() {
     _setupPlayerListeners();
@@ -52,7 +65,7 @@ class UploadAudioService {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac'],
+        allowedExtensions: AppConstants.supportedAudioExtensionsForPicker,
         allowMultiple: false,
       );
 
@@ -187,6 +200,7 @@ class UploadAudioService {
   }
 
   /// Toggle play/pause
+  @override
   Future<void> togglePlayback() async {
     if (uploadedFilePath == null) return;
 
@@ -203,6 +217,7 @@ class UploadAudioService {
   }
 
   /// Stop playback
+  @override
   Future<void> stopPlayback() async {
     await _player.stop();
     playPosition = Duration.zero;
@@ -210,6 +225,7 @@ class UploadAudioService {
   }
 
   /// Seek to a specific position
+  @override
   Future<void> seekTo(Duration position) async {
     await _player.seek(position);
   }
@@ -226,11 +242,13 @@ class UploadAudioService {
   }
 
   /// Dispose resources
+  @override
   void dispose() {
     _player.dispose();
   }
 
   /// Format file size for display
+  @override
   String getFormattedFileSize() {
     if (fileSize == null) return '';
 
@@ -240,6 +258,40 @@ class UploadAudioService {
       return '${(fileSize! / 1024).toStringAsFixed(2)} KB';
     } else {
       return '${(fileSize! / (1024 * 1024)).toStringAsFixed(2)} MB';
+    }
+  }
+
+  /// Process a dropped file (handle file copying and loading)
+  Future<bool> processDroppedFile(XFile file) async {
+    try {
+      if (kIsWeb) {
+        uploadedFilePath = file.path;
+        fileName = file.name;
+        fileSize = await file.length();
+      } else {
+        // Mobile/Desktop: copy file to app documents directory for persistence
+        final ioFile = File(file.path);
+        final directory = await getApplicationDocumentsDirectory();
+        final fileExtension = path.extension(file.name);
+        final newFileName =
+            'upload_${DateTime.now().millisecondsSinceEpoch}$fileExtension';
+        final newPath = path.join(directory.path, newFileName);
+
+        // Copy the file
+        final copiedFile = await ioFile.copy(newPath);
+
+        uploadedFilePath = copiedFile.path;
+        fileName = file.name;
+        fileSize = await copiedFile.length();
+      }
+
+      // Load audio to get duration
+      await loadAudio();
+
+      onStateChanged?.call();
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }

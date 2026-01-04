@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
-import 'package:smean_mobile_app/ui/widgets/audio_details_screen.dart';
+import 'package:smean_mobile_app/ui/screens/audio/audio_details_screen.dart';
 
 class RecentActivityCard extends StatelessWidget {
   final CardModel card;

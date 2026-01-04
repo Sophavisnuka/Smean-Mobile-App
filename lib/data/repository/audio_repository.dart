@@ -112,8 +112,10 @@ class AudioRepository {
     required int audioDuration,
     required String cardId,
     required String audioId,
+    bool isFavorite = false,
+    DateTime? createdAt,
   }) async {
-    final now = DateTime.now();
+    final now = createdAt ?? DateTime.now();
 
     // Insert card
     await db
@@ -123,7 +125,7 @@ class AudioRepository {
             id: drift.Value(cardId),
             userId: drift.Value(userId),
             cardName: drift.Value(cardName),
-            isFavorite: const drift.Value(false),
+            isFavorite: drift.Value(isFavorite),
             createdAt: drift.Value(now),
             updatedAt: drift.Value(now),
           ),
