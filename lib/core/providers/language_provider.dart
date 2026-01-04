@@ -26,6 +26,15 @@ class LanguageProvider extends ChangeNotifier {
     _saveLanguage(_currentLocale);
   }
 
+  // Set specific language
+  void setLanguage(String languageCode) async {
+    if (_currentLocale.languageCode != languageCode) {
+      _currentLocale = Locale(languageCode);
+      notifyListeners();
+      _saveLanguage(_currentLocale);
+    }
+  }
+
   Future<void> _saveLanguage(Locale locale) async {
     final existing = await (db.select(
       db.appSession,
