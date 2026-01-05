@@ -59,7 +59,7 @@ class SmeanApp extends StatelessWidget {
         scaffoldBackgroundColor: Color(0xFFF4F6F8),
 
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.contrast,
+          backgroundColor: Color(0xFFF4F6F8),
           foregroundColor: AppColors.primary,
         ),
 

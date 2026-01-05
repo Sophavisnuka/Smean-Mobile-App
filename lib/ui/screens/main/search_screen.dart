@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/data/repository/card_repository.dart';
@@ -7,6 +8,7 @@ import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/ui/widgets/recent_activity_card.dart';
+import 'package:smean_mobile_app/ui/widgets/home/search_bar_widget.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -99,55 +101,56 @@ class SearchScreenState extends State<SearchScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            // Search Bar
-            TextField(
+            // Search Bar using SearchBarWidget
+            SearchBarWidget(
+              hintText: isKhmer ? 'ស្វែងរកសំឡេង...' : 'Search audio...',
               onChanged: (value) {
                 setState(() {
                   searchText = value;
                 });
                 reloadAudios();
               },
-              decoration: InputDecoration(
-                hintText: 'Search audio...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey[100],
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 16,
-                ),
-              ),
             ),
             SizedBox(height: 24),
-            // Placeholder for results
+            // Container wrapping results
             Expanded(
-              child: _loading
-                  ? Center(child: CircularProgressIndicator())
-                  : filteredCards.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No result found',
-                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                      ),
-                    )
-                  : ListView.separated(
-                      itemCount: filteredCards.length,
-                      separatorBuilder: (context, index) =>
-                          SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final card = filteredCards[index];
-                        return RecentActivityCard(
-                          isKhmer: isKhmer,
-                          card: card,
-                          searchQuery: searchText,
-                          onRefresh: reloadAudios,
-                        );
-                      },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Container(
+                    padding: const EdgeInsets.all(20),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
+                    decoration: BoxDecoration(
+                      color: AppColors.contrast,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: _loading
+                      ? Center(child: CircularProgressIndicator())
+                      : filteredCards.isEmpty
+                      ? Center(
+                          child: Text(
+                            isKhmer ? 'រកមិនឃើញលទ្ធផល' : 'No result found',
+                            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: filteredCards.length,
+                          separatorBuilder: (context, index) =>
+                              SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final card = filteredCards[index];
+                            return RecentActivityCard(
+                              isKhmer: isKhmer,
+                              card: card,
+                              searchQuery: searchText,
+                              onRefresh: reloadAudios,
+                            );
+                          },
+                        ),
+                  );
+                },
+              ),
             ),
           ],
         ),

@@ -53,7 +53,9 @@ class HomeScreenState extends State<HomeScreen> {
     final user = await _authService.getCurrentUser();
     if (user == null) return;
 
-    final cards = await _cardRepo.getCardsForUser(user.id);
+    final cards = searchText.isEmpty
+        ? await _cardRepo.getCardsForUser(user.id)
+        : await _cardRepo.searchCards(user.id, searchText);
     setState(() {
       _cards = cards;
       _loading = false;
@@ -145,6 +147,7 @@ class HomeScreenState extends State<HomeScreen> {
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
 
     return Scaffold(
+      // backgroundColor: AppColors.contrast,
       appBar: AppBar(
         elevation: 0,
         title: Row(
@@ -214,8 +217,12 @@ class HomeScreenState extends State<HomeScreen> {
           children: [
             // Hero Section with consistent padding
             Container(
-              color: Color(0xFFF4F6F8),
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.contrast,
+                borderRadius: BorderRadius.circular(16)
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -249,44 +256,50 @@ class HomeScreenState extends State<HomeScreen> {
             ),
             // Content Section with consistent padding
             Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                child: Column(
-                  children: [
-                    // Search bar
-                    SearchBarWidget(
-                      onTap: () => widget.onSwitchTab(1),
-                      hintText: isKhmer ? 'ស្វែងរកសំឡេង...' : 'Search audio...',
-                    ),
-                    const SizedBox(height: 7),
-                    // Section header with favorite toggle
-                    SectionHeaderWidget(
-                      title: _showOnlyFavorites
-                        ? (isKhmer ? 'សំឡេងដែលចូលចិត្ត' : 'Favorite Recordings')
-                        : (isKhmer ? 'កំណត់ត្រាថ្មីៗ' : 'Recent Recordings'),
-                      icon: Icons.bookmark,
-                      iconColor: _showOnlyFavorites ? Colors.amber : Color(0xFFF4F6F8),
-                      onIconPressed: () {
-                        setState(() {
-                          _showOnlyFavorites = !_showOnlyFavorites;
-                        });
-                      },
-                    ),
-                  ],
-                ),
+              padding: const EdgeInsets.all(20),
+              child: SearchBarWidget(
+                hintText: isKhmer ? 'ស្វែងរកសំឡេង...' : 'Search audio...',
+                onChanged: (value) {
+                  setState(() {
+                    searchText = value;
+                  });
+                  displayAudio();
+                },
               ),
-            Container(
-              padding: EdgeInsets.symmetric(vertical:  20),
-              width: double.infinity,
-              // height: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(25), topRight: Radius.circular(25))
-              ),
-              // Audio content with consistent padding
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 50),
-                child: _buildAudioContent(isKhmer),
-              ),
+            ),
+            SizedBox(height: 7),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.contrast,
+                    borderRadius: BorderRadius.circular(16)
+                  ),
+                  child: Column(
+                    children: [
+                      // Section header with favorite toggle
+                      SectionHeaderWidget(
+                        title: _showOnlyFavorites
+                          ? (isKhmer ? 'សំឡេងដែលចូលចិត្ត' : 'Favorite Recordings')
+                          : (isKhmer ? 'កំណត់ត្រាថ្មីៗ' : 'Recent Recordings'),
+                        icon: Icons.bookmark,
+                        iconColor: _showOnlyFavorites ? Colors.amber : Color(0xFFF4F6F8),
+                        onIconPressed: () {
+                          setState(() {
+                            _showOnlyFavorites = !_showOnlyFavorites;
+                          });
+                        },
+                      ),
+                      _buildAudioContent(isKhmer),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -355,20 +368,21 @@ class HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    if (_cards.isEmpty) {
-      return EmptyStateWidget(
-        message: isKhmer ? 'គ្មានកំណត់ត្រា' : 'No Recent Records',
-        color: Colors.black,
-      );
-    }
-
     final displayCards = _showOnlyFavorites
         ? _cards.where((card) => card.isFavorite).toList()
         : _cards;
 
     if (displayCards.isEmpty) {
-      return EmptyStateWidget(
-        message: isKhmer ? 'គ្មានសំឡេងដែលចូលចិត្ត' : 'No Favorite Records',
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: EmptyStateWidget(
+            message: _showOnlyFavorites
+                ? (isKhmer ? 'គ្មានសំឡេងដែលចូលចិត្ត' : 'No Favorite Records')
+                : (isKhmer ? 'គ្មានកំណត់ត្រា' : 'No Recent Records'),
+            color: Colors.black,
+          ),
+        ),
       );
     }
 
