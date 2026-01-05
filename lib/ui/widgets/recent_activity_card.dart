@@ -26,23 +26,23 @@ class RecentActivityCard extends StatelessWidget {
   });
 
   Widget _buildHighlightedText(String text, String? query) {
+    // Default (no query)
     if (query == null || query.isEmpty) {
       return Text(
         text,
-        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
       );
     }
 
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
-    List<TextSpan> spans = [];
+    final spans = <TextSpan>[];
 
     for (int i = 0; i < text.length; i++) {
       final char = text[i];
-      final lowerChar = lowerText[i];
-
-      // Check if this character matches any character in the query
-      bool isHighlighted = lowerQuery.contains(lowerChar);
+      final isHighlighted = lowerQuery.contains(lowerText[i]);
 
       spans.add(
         TextSpan(
@@ -59,14 +59,110 @@ class RecentActivityCard extends StatelessWidget {
       );
     }
 
-    return RichText(text: TextSpan(children: spans));
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(children: spans),
+    );
   }
 
   String _formatDuration(int seconds) {
-    final duration = Duration(seconds: seconds);
-    final minutes = duration.inMinutes;
-    final secs = duration.inSeconds % 60;
+    final d = Duration(seconds: seconds);
+    final minutes = d.inMinutes;
+    final secs = d.inSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  Widget _savedBadge(BuildContext context) {
+    return GestureDetector(
+      onTap: onFavoriteToggle,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.amber.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.amber.shade200, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bookmark, color: Colors.amber.shade700, size: 14),
+            const SizedBox(width: 4),
+            Text(
+              isKhmer ? 'ចូលចិត្ត' : 'Saved',
+              style: TextStyle(
+                color: Colors.amber.shade700,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PopupMenuButton<String> _buildMenu() {
+    return PopupMenuButton<String>(
+      // shrink the “big space” tap target
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+      iconSize: 20,
+      splashRadius: 18,
+      icon: Icon(Icons.more_vert, color: Colors.grey[400]),
+      onSelected: (value) {
+        if (value == 'favorite' && onFavoriteToggle != null) {
+          onFavoriteToggle!();
+        } else if (value == 'edit' && onEdit != null) {
+          onEdit!();
+        } else if (value == 'delete' && onDelete != null) {
+          onDelete!();
+        }
+      },
+      itemBuilder: (context) => [
+        if (onFavoriteToggle != null)
+          PopupMenuItem(
+            value: 'favorite',
+            child: Row(
+              children: [
+                Icon(
+                  card.isFavorite ? Icons.bookmark_remove : Icons.bookmark_add,
+                  color: Colors.amber.shade700,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  card.isFavorite
+                      ? (isKhmer ? 'លុបចេញពីចំណូលចិត្ត' : 'Remove from Saved')
+                      : (isKhmer ? 'រក្សាទុក' : 'Save'),
+                ),
+              ],
+            ),
+          ),
+        if (onEdit != null)
+          PopupMenuItem(
+            value: 'edit',
+            child: Row(
+              children: [
+                const Icon(Icons.edit, color: Colors.black54, size: 20),
+                const SizedBox(width: 8),
+                Text(isKhmer ? 'កែប្រែ' : 'Edit'),
+              ],
+            ),
+          ),
+        if (onDelete != null)
+          PopupMenuItem(
+            value: 'delete',
+            child: Row(
+              children: [
+                const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                const SizedBox(width: 8),
+                Text(isKhmer ? 'លុប' : 'Delete'),
+              ],
+            ),
+          ),
+      ],
+    );
   }
 
   @override
@@ -74,38 +170,34 @@ class RecentActivityCard extends StatelessWidget {
     final createdAt = card.createdAt;
     final title = card.cardName;
     final duration = card.audioDuration ?? 0;
-    
-    // Format the date as you like
-    String formattedDate = isKhmer
+
+    final formattedDate = isKhmer
         ? DateFormat('dd/MM/yyyy').format(createdAt)
         : DateFormat('MMM dd, yyyy').format(createdAt);
 
+    final hasMenu = onEdit != null || onDelete != null || onFavoriteToggle != null;
+
     return Card(
-      // color: Colors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: Colors.grey.shade200, width: 1),
       ),
       child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap: () async {
           final deleted = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(
-              builder: (context) => AudioDetailsScreen(card: card),
-            ),
+            MaterialPageRoute(builder: (context) => AudioDetailsScreen(card: card)),
           );
 
-          // If the card was deleted in the details screen, refresh the list
-          if (deleted == true && onRefresh != null) {
-            onRefresh!();
-          }
+          if (deleted == true && onRefresh != null) onRefresh!();
         },
-        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Leading icon
+              // LEFT: mic icon
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -114,154 +206,71 @@ class RecentActivityCard extends StatelessWidget {
                 ),
                 child: Icon(Icons.mic, color: AppColors.primary, size: 26),
               ),
-              const SizedBox(width: 14),
-              // Title, date, and duration
+              const SizedBox(width: 12),
+
+              // MIDDLE: title + meta (date)
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title with favorite badge
                     Row(
                       children: [
                         Expanded(
                           child: _buildHighlightedText(title, searchQuery),
                         ),
-                        if (onFavoriteToggle != null && card.isFavorite)
-                          GestureDetector(
-                            onTap: onFavoriteToggle,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.amber.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.amber.shade200,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.bookmark,
-                                    color: Colors.amber.shade700,
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    isKhmer ? 'ចូលចិត្ត' : 'Saved',
-                                    style: TextStyle(
-                                      color: Colors.amber.shade700,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                        if (onFavoriteToggle != null && card.isFavorite) ...[
+                          const SizedBox(width: 8),
+                          _savedBadge(context),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 6),
-                    // Date and Duration row
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.calendar_today, 
-                          size: 13, 
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          formattedDate,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
+                        Expanded(
+                          child: Text(
+                            formattedDate,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Icon(Icons.access_time, 
-                          size: 13, 
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatDuration(duration),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
+                        SizedBox(width: 10),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.access_time, size: 13, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDuration(duration),
+                              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              // Menu button
-              if (onEdit != null || onDelete != null || onFavoriteToggle != null)
-                PopupMenuButton<String>(
-                  icon: Icon(Icons.more_vert, 
-                    color: Colors.grey[400], 
-                    size: 22,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onSelected: (value) {
-                    if (value == 'favorite' && onFavoriteToggle != null) {
-                      onFavoriteToggle!();
-                    } else if (value == 'edit' && onEdit != null) {
-                      onEdit!();
-                    } else if (value == 'delete' && onDelete != null) {
-                      onDelete!();
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    if (onFavoriteToggle != null)
-                      PopupMenuItem(
-                        value: 'favorite',
-                        child: Row(
-                          children: [
-                            Icon(
-                              card.isFavorite ? Icons.bookmark_remove : Icons.bookmark_add,
-                              color: Colors.amber.shade700,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              card.isFavorite
-                                  ? (isKhmer ? 'លុបចេញពីចំណូលចិត្ត' : 'Remove from Saved')
-                                  : (isKhmer ? 'រក្សាទុក' : 'Save'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (onEdit != null)
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, color: Colors.black54, size: 20),
-                            const SizedBox(width: 8),
-                            Text(isKhmer ? 'កែប្រែ' : 'Edit'),
-                          ],
-                        ),
-                      ),
-                    if (onDelete != null)
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                            const SizedBox(width: 8),
-                            Text(isKhmer ? 'លុប' : 'Delete'),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
+              const SizedBox(width: 10),
+              // RIGHT: menu + duration
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (hasMenu)
+                    SizedBox(
+                      height: 28,
+                      width: 28,
+                      child: Center(child: _buildMenu()),
+                    )
+                  else
+                    const SizedBox(height: 28), // keep alignment even without menu
+                  const SizedBox(height: 6),
+                ],
+              ),
             ],
           ),
         ),
