@@ -4,7 +4,7 @@ import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/service/record_audio_service.dart';
-import 'package:smean_mobile_app/data/repository/audio_repository.dart';
+import 'package:smean_mobile_app/data/repository/card_repository.dart';
 import 'package:smean_mobile_app/service/transcript_service.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
@@ -26,7 +26,7 @@ class RecordScreen extends StatefulWidget {
 
 class _RecordScreenState extends State<RecordScreen> {
   late RecordAudioService _audioService;
-  late AudioRepository _audioRepo;
+  late CardRepository _cardRepo;
   late TranscriptService _transcriptService;
   late AuthService _authService;
 
@@ -34,7 +34,7 @@ class _RecordScreenState extends State<RecordScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final db = Provider.of<AppDatabase>(context, listen: false);
-    _audioRepo = AudioRepository(db);
+    _cardRepo = CardRepository(db);
     _transcriptService = TranscriptService(db);
     _authService = AuthService(db);
   }
@@ -82,7 +82,7 @@ class _RecordScreenState extends State<RecordScreen> {
     final audioId = uuid.v4();
 
     // Create card with audio
-    await _audioRepo.createCardWithAudio(
+    await _cardRepo.createCard(
       userId: user.id,
       cardName: title,
       audioFilePath: _audioService.recordedFilePath!,
@@ -193,7 +193,33 @@ class _RecordScreenState extends State<RecordScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: Text(isKhmer ? 'កំណត់ត្រា' : 'Record'),
+        title: Row(
+          children: [
+            Image.asset('assets/images/Smean-Logo.png', height: 40),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isKhmer ? 'កំណត់ត្រា' : 'Record',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                const Text(
+                  'SMEAN',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),

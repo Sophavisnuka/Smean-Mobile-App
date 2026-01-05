@@ -4,13 +4,13 @@ import 'package:smean_mobile_app/core/constants/app_constants.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/core/utils/file_validation_util.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
+import 'package:smean_mobile_app/data/repository/card_repository.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/loading_dialog.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 import 'package:smean_mobile_app/ui/widgets/upload/upload_area_widget.dart';
 import 'package:smean_mobile_app/ui/widgets/upload/upload_progress_view.dart';
 import 'package:smean_mobile_app/service/upload_audio_service.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/audio_preview_dialog.dart';
-import 'package:smean_mobile_app/data/repository/audio_repository.dart';
 import 'package:smean_mobile_app/service/transcript_service.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
@@ -28,7 +28,7 @@ class UploadScreen extends StatefulWidget {
 
 class _UploadScreenState extends State<UploadScreen> {
   late UploadAudioService _uploadService;
-  late AudioRepository _audioRepo;
+  late CardRepository _cardRepo;
   late TranscriptService _transcriptService;
   late AuthService _authService;
   bool _isDragging = false;
@@ -44,7 +44,7 @@ class _UploadScreenState extends State<UploadScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final db = Provider.of<AppDatabase>(context, listen: false);
-    _audioRepo = AudioRepository(db);
+    _cardRepo = CardRepository(db);
     _transcriptService = TranscriptService(db);
     _authService = AuthService(db);
   }
@@ -261,7 +261,7 @@ class _UploadScreenState extends State<UploadScreen> {
     final audioId = AppConstants.uuid.v4();
 
     // Create card with audio
-    await _audioRepo.createCardWithAudio(
+    await _cardRepo.createCard(
       userId: user.id,
       cardName: title,
       audioFilePath: _uploadService.uploadedFilePath!,
@@ -299,7 +299,33 @@ class _UploadScreenState extends State<UploadScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: Text(isKhmer ? 'ផ្ទុកឡើង' : 'Upload'),
+        title: Row(
+          children: [
+            Image.asset('assets/images/Smean-Logo.png', height: 40),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isKhmer ? 'ផ្ទុកឡើង' : 'Upload',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                const Text(
+                  'SMEAN',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),

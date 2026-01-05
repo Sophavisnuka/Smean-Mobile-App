@@ -62,18 +62,31 @@ class RecentActivityCard extends StatelessWidget {
     return RichText(text: TextSpan(children: spans));
   }
 
+  String _formatDuration(int seconds) {
+    final duration = Duration(seconds: seconds);
+    final minutes = duration.inMinutes;
+    final secs = duration.inSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final createdAt = card.createdAt;
     final title = card.cardName;
+    final duration = card.audioDuration ?? 0;
+    
     // Format the date as you like
     String formattedDate = isKhmer
-        ? DateFormat('dd/MM/yyyy · HH:mm').format(createdAt)
-        : DateFormat('MMM dd, yyyy · HH:mm').format(createdAt);
+        ? DateFormat('dd/MM/yyyy').format(createdAt)
+        : DateFormat('MMM dd, yyyy').format(createdAt);
 
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      // color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200, width: 1),
+      ),
       child: InkWell(
         onTap: () async {
           final deleted = await Navigator.of(context).push<bool>(
@@ -87,96 +100,166 @@ class RecentActivityCard extends StatelessWidget {
             onRefresh!();
           }
         },
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: EdgeInsets.all(15),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               // Leading icon
               Container(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.mic, color: AppColors.primary, size: 24),
+                child: Icon(Icons.mic, color: AppColors.primary, size: 26),
               ),
-              SizedBox(width: 12),
-              // Title, date, and favorite button
+              const SizedBox(width: 14),
+              // Title, date, and duration
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildHighlightedText(title, searchQuery),
-                    SizedBox(height: 4),
+                    // Title with favorite badge
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            formattedDate,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
+                          child: _buildHighlightedText(title, searchQuery),
                         ),
-                        // Favorite button on the same line as date
-                        if (onFavoriteToggle != null)
-                          InkWell(
+                        if (onFavoriteToggle != null && card.isFavorite)
+                          GestureDetector(
                             onTap: onFavoriteToggle,
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Icon(
-                                card.isFavorite
-                                    ? Icons.bookmark
-                                    : Icons.bookmark_border,
-                                color: card.isFavorite
-                                    ? Colors.amber
-                                    : Colors.grey,
-                                size: 22,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.amber.shade200,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.bookmark,
+                                    color: Colors.amber.shade700,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    isKhmer ? 'ចូលចិត្ត' : 'Saved',
+                                    style: TextStyle(
+                                      color: Colors.amber.shade700,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                       ],
                     ),
+                    const SizedBox(height: 6),
+                    // Date and Duration row
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_today, 
+                          size: 13, 
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          formattedDate,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Icon(Icons.access_time, 
+                          size: 13, 
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDuration(duration),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              // Menu button at top right
-              if (onEdit != null || onDelete != null)
+              const SizedBox(width: 8),
+              // Menu button
+              if (onEdit != null || onDelete != null || onFavoriteToggle != null)
                 PopupMenuButton<String>(
-                  icon: Icon(Icons.more_vert, color: Colors.grey, size: 24),
+                  icon: Icon(Icons.more_vert, 
+                    color: Colors.grey[400], 
+                    size: 22,
+                  ),
                   padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   onSelected: (value) {
-                    if (value == 'edit' && onEdit != null) {
+                    if (value == 'favorite' && onFavoriteToggle != null) {
+                      onFavoriteToggle!();
+                    } else if (value == 'edit' && onEdit != null) {
                       onEdit!();
                     } else if (value == 'delete' && onDelete != null) {
                       onDelete!();
                     }
                   },
                   itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit, color: Colors.black54, size: 20),
-                          SizedBox(width: 8),
-                          Text(isKhmer ? 'កែប្រែ' : 'Edit'),
-                        ],
+                    if (onFavoriteToggle != null)
+                      PopupMenuItem(
+                        value: 'favorite',
+                        child: Row(
+                          children: [
+                            Icon(
+                              card.isFavorite ? Icons.bookmark_remove : Icons.bookmark_add,
+                              color: Colors.amber.shade700,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              card.isFavorite
+                                  ? (isKhmer ? 'លុបចេញពីចំណូលចិត្ត' : 'Remove from Saved')
+                                  : (isKhmer ? 'រក្សាទុក' : 'Save'),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                          SizedBox(width: 8),
-                          Text(isKhmer ? 'លុប' : 'Delete'),
-                        ],
+                    if (onEdit != null)
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, color: Colors.black54, size: 20),
+                            const SizedBox(width: 8),
+                            Text(isKhmer ? 'កែប្រែ' : 'Edit'),
+                          ],
+                        ),
                       ),
-                    ),
+                    if (onDelete != null)
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                            const SizedBox(width: 8),
+                            Text(isKhmer ? 'លុប' : 'Delete'),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
             ],

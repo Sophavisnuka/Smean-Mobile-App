@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
 
 class LanguageSwitcherButton extends StatelessWidget {
@@ -17,11 +18,11 @@ class LanguageSwitcherButton extends StatelessWidget {
         languageProvider.toggleLanguage();
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.2), // Glass effect
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white, width: 1),
+          border: Border.all(color: AppColors.primary, width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -30,12 +31,12 @@ class LanguageSwitcherButton extends StatelessWidget {
             Text(
               isEnglish ? "🇺🇸 EN" : "🇰🇭 KH",
               style: const TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.swap_horiz, color: Colors.white, size: 18),
+            const SizedBox(width: 3),
+            const Icon(Icons.swap_horiz, color: AppColors.primary, size: 18),
           ],
         ),
       ),
