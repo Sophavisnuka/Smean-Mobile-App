@@ -22,6 +22,7 @@ void main() async {
           create: (context) => LanguageProvider(context.read<AppDatabase>()),
         ),
       ],
+      
       child: const SmeanApp(),
     ),
   );
@@ -55,11 +56,11 @@ class SmeanApp extends StatelessWidget {
           surface: Colors.white,
         ),
 
-        scaffoldBackgroundColor: AppColors.contrast,
+        scaffoldBackgroundColor: Color(0xFFF4F6F8),
 
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.contrast,
+          backgroundColor: AppColors.contrast,
+          foregroundColor: AppColors.primary,
         ),
 
         floatingActionButtonTheme: FloatingActionButtonThemeData(

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
-import 'package:smean_mobile_app/data/repository/audio_repository.dart';
+import 'package:smean_mobile_app/data/repository/card_repository.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
@@ -27,8 +28,8 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   String searchText = '';
-  late AudioRepository _audioRepo;
   late AuthService _authService;
+  late CardRepository _cardRepo;
   List<CardModel> _cards = [];
   bool _isFanMenuOpen = false;
   bool _showOnlyFavorites = false;
@@ -43,7 +44,7 @@ class HomeScreenState extends State<HomeScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final db = Provider.of<AppDatabase>(context, listen: false);
-    _audioRepo = AudioRepository(db);
+    _cardRepo = CardRepository(db);
     _authService = AuthService(db);
     displayAudio();
   }
@@ -52,7 +53,7 @@ class HomeScreenState extends State<HomeScreen> {
     final user = await _authService.getCurrentUser();
     if (user == null) return;
 
-    final cards = await _audioRepo.getCardsForUser(user.id);
+    final cards = await _cardRepo.getCardsForUser(user.id);
     setState(() {
       _cards = cards;
       _loading = false;
@@ -75,7 +76,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     if (newTitle == null || newTitle.isEmpty) return;
 
-    await _audioRepo.updateCardName(card.cardId, newTitle);
+    await _cardRepo.updateCardName(card.cardId, newTitle);
     displayAudio(); // Reload
   }
 
@@ -102,7 +103,7 @@ class HomeScreenState extends State<HomeScreen> {
     // Store card data for potential undo
     final deletedCard = card;
 
-    await _audioRepo.deleteCard(card.cardId);
+    await _cardRepo.deleteCard(card.cardId);
     displayAudio(); // Reload to show updated list
 
     if (!mounted) return;
@@ -115,7 +116,7 @@ class HomeScreenState extends State<HomeScreen> {
       actionLabel: isKhmer ? 'មិនធ្វើវិញ' : 'UNDO',
       onAction: () async {
         // Restore the deleted card
-        await _audioRepo.createCardWithAudio(
+        await _cardRepo.createCard(
           userId: deletedCard.userId,
           cardName: deletedCard.cardName,
           audioFilePath: deletedCard.audioFilePath!,
@@ -134,40 +135,8 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _toggleFavorite(CardModel card) async {
-    await _audioRepo.toggleFavorite(card.cardId, !card.isFavorite);
+    await _cardRepo.toggleFavorite(card.cardId, !card.isFavorite);
     displayAudio(); // Reload
-  }
-
-  Widget _buildAudioContent(bool isKhmer) {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_cards.isEmpty) {
-      return EmptyStateWidget(
-        message: isKhmer ? 'គ្មានកំណត់ត្រា' : 'No Recent Records',
-        color: Colors.black,
-      );
-    }
-
-    final displayCards = _showOnlyFavorites
-        ? _cards.where((card) => card.isFavorite).toList()
-        : _cards;
-
-    if (displayCards.isEmpty) {
-      return EmptyStateWidget(
-        message: isKhmer ? 'គ្មានសំឡេងដែលចូលចិត្ត' : 'No Favorite Records',
-      );
-    }
-
-    return AudioListWidget(
-      cards: displayCards,
-      isKhmer: isKhmer,
-      onEdit: _editTitle,
-      onDelete: _deleteCard,
-      onFavoriteToggle: _toggleFavorite,
-      onRefresh: displayAudio,
-    );
   }
 
   @override
@@ -177,7 +146,34 @@ class HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset('assets/images/Smean-Logo.png', height: 50),
+        elevation: 0,
+        title: Row(
+          children: [
+            Image.asset('assets/images/Smean-Logo.png', height: 40),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isKhmer ? 'សួស្តី!' : 'Welcome!',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                const Text(
+                  'SMEAN',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         centerTitle: false,
         actions: const [
           Padding(
@@ -208,41 +204,188 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await Future.delayed(const Duration(milliseconds: 500));
+          displayAudio();
+        },
         child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            // Profile card
-            ProfileCard(isKhmer: isKhmer, onTap: () => widget.onSwitchTab(4)),
-            const SizedBox(height: 15),
-
-            // Search bar
-            SearchBarWidget(
-              onTap: () => widget.onSwitchTab(1),
-              hintText: isKhmer ? 'ស្វែងរកសំឡេង...' : 'Search audio...',
+            // Hero Section with consistent padding
+            Container(
+              color: Color(0xFFF4F6F8),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Profile Card
+                  ProfileCard(isKhmer: isKhmer, onTap: () => widget.onSwitchTab(4)),
+                  const SizedBox(height: 16),
+                  // Stats Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          icon: Icons.library_music,
+                          title: isKhmer ? 'សរុប' : 'Total',
+                          value: '${_cards.length}',
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard(
+                          icon: Icons.bookmark,
+                          title: isKhmer ? 'ចូលចិត្ត' : 'Saved',
+                          value: '${_cards.where((c) => c.isFavorite).length}',
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 15),
-
-            // Section header with favorite toggle
-            SectionHeaderWidget(
-              title: _showOnlyFavorites
-                  ? (isKhmer ? 'សំឡេងដែលចូលចិត្ត' : 'Favorite Recorded')
-                  : (isKhmer ? 'សំឡេងទាំងអស់' : 'All Voice Recorded'),
-              icon: Icons.bookmark,
-              iconColor: _showOnlyFavorites ? Colors.amber : Colors.grey,
-              onIconPressed: () {
-                setState(() {
-                  _showOnlyFavorites = !_showOnlyFavorites;
-                });
-              },
+            // Content Section with consistent padding
+            Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                child: Column(
+                  children: [
+                    // Search bar
+                    SearchBarWidget(
+                      onTap: () => widget.onSwitchTab(1),
+                      hintText: isKhmer ? 'ស្វែងរកសំឡេង...' : 'Search audio...',
+                    ),
+                    const SizedBox(height: 7),
+                    // Section header with favorite toggle
+                    SectionHeaderWidget(
+                      title: _showOnlyFavorites
+                        ? (isKhmer ? 'សំឡេងដែលចូលចិត្ត' : 'Favorite Recordings')
+                        : (isKhmer ? 'កំណត់ត្រាថ្មីៗ' : 'Recent Recordings'),
+                      icon: Icons.bookmark,
+                      iconColor: _showOnlyFavorites ? Colors.amber : Color(0xFFF4F6F8),
+                      onIconPressed: () {
+                        setState(() {
+                          _showOnlyFavorites = !_showOnlyFavorites;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical:  20),
+              width: double.infinity,
+              // height: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(25), topRight: Radius.circular(25))
+              ),
+              // Audio content with consistent padding
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 50),
+                child: _buildAudioContent(isKhmer),
+              ),
             ),
-            const SizedBox(height: 15),
-
-            // Audio content
-            _buildAudioContent(isKhmer),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAudioContent(bool isKhmer) {
+    if (_loading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_cards.isEmpty) {
+      return EmptyStateWidget(
+        message: isKhmer ? 'គ្មានកំណត់ត្រា' : 'No Recent Records',
+        color: Colors.black,
+      );
+    }
+
+    final displayCards = _showOnlyFavorites
+        ? _cards.where((card) => card.isFavorite).toList()
+        : _cards;
+
+    if (displayCards.isEmpty) {
+      return EmptyStateWidget(
+        message: isKhmer ? 'គ្មានសំឡេងដែលចូលចិត្ត' : 'No Favorite Records',
+      );
+    }
+
+    return Column(
+      children: displayCards.map((card) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AudioListWidget(
+            cards: [card],
+            isKhmer: isKhmer,
+            onEdit: _editTitle,
+            onDelete: _deleteCard,
+            onFavoriteToggle: _toggleFavorite,
+            onRefresh: displayAudio,
+          ),
+        );
+      }).toList(),
     );
   }
 }

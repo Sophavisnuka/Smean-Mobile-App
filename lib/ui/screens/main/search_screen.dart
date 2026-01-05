@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
-import 'package:smean_mobile_app/data/repository/audio_repository.dart';
+import 'package:smean_mobile_app/data/repository/card_repository.dart';
 import 'package:smean_mobile_app/service/auth_service.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
@@ -18,7 +18,7 @@ class SearchScreen extends StatefulWidget {
 class SearchScreenState extends State<SearchScreen> {
   String searchText = '';
   List<CardModel> _cards = [];
-  late AudioRepository _audioRepo;
+  late CardRepository _cardRepo;
   late AuthService _authService;
   bool _loading = true;
 
@@ -31,7 +31,7 @@ class SearchScreenState extends State<SearchScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final db = Provider.of<AppDatabase>(context, listen: false);
-    _audioRepo = AudioRepository(db);
+    _cardRepo = CardRepository(db);
     _authService = AuthService(db);
     reloadAudios(); // initial load
   }
@@ -41,8 +41,8 @@ class SearchScreenState extends State<SearchScreen> {
     if (user == null) return;
 
     final cards = searchText.isEmpty
-        ? await _audioRepo.getCardsForUser(user.id)
-        : await _audioRepo.searchCards(user.id, searchText);
+        ? await _cardRepo.getCardsForUser(user.id)
+        : await _cardRepo.searchCards(user.id, searchText);
     setState(() {
       _cards = cards;
       _loading = false;
@@ -57,9 +57,37 @@ class SearchScreenState extends State<SearchScreen> {
     final filteredCards = _cards;
 
     return Scaffold(
+      extendBodyBehindAppBar: false,
       appBar: AppBar(
+        elevation: 0,
         centerTitle: false,
-        title: Text(isKhmer ? 'ស្វែងរក' : 'Search'),
+        title: Row(
+          children: [
+            Image.asset('assets/images/Smean-Logo.png', height: 40),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isKhmer ? 'ស្វែងរក!' : 'Search',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                const Text(
+                  'SMEAN',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),

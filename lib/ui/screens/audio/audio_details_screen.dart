@@ -6,13 +6,14 @@ import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
-import 'package:smean_mobile_app/data/repository/audio_repository.dart';
+import 'package:smean_mobile_app/data/repository/card_repository.dart';
 import 'package:smean_mobile_app/service/audio_playback_service.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/audio_info_header.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/audio_player_card.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/summary_section.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/transcript_section.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/delete_confirmation_dialog.dart';
+import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
 
 /// Screen that displays detailed information about an audio recording
 class AudioDetailsScreen extends StatefulWidget {
@@ -83,12 +84,12 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
 
       try {
         final db = Provider.of<AppDatabase>(context, listen: false);
-        final audioRepo = AudioRepository(db);
+        final cardRepo = CardRepository(db);
 
         // Store card data for potential undo
         final deletedCard = widget.card;
 
-        await audioRepo.deleteCard(widget.card.cardId);
+        await cardRepo.deleteCard(widget.card.cardId);
 
         if (!mounted) return;
 
@@ -104,7 +105,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
           actionLabel: isKhmer ? 'មិនធ្វើវិញ' : 'UNDO',
           onAction: () async {
             // Restore the deleted card
-            await audioRepo.createCardWithAudio(
+            await cardRepo.createCard(
               userId: deletedCard.userId,
               cardName: deletedCard.cardName,
               audioFilePath: deletedCard.audioFilePath!,
@@ -144,8 +145,14 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
       appBar: AppBar(
         title: Text(
           isKhmer ? 'ព័ត៌មានលម្អិត' : 'Details',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.additional),
         ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: LanguageSwitcherButton(),
+          ),
+        ],
         centerTitle: true,
       ),
       body: SingleChildScrollView(
