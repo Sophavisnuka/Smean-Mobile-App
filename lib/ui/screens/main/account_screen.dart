@@ -304,7 +304,7 @@ class _AccountScreenState extends State<AccountScreen> {
           children: [
             // Profile Picture Section
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,

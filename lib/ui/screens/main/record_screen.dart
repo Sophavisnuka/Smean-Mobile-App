@@ -227,16 +227,19 @@ class _RecordScreenState extends State<RecordScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
+      body: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16)
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Timer Display
             RecordingTimerWidget(duration: _getDisplayDuration()),
-
             const SizedBox(height: 40),
-
             // Recording Button
             Center(
               child: RecordingButtonWidget(
@@ -244,9 +247,7 @@ class _RecordScreenState extends State<RecordScreen> {
                 onTap: _handleRecordingToggle,
               ),
             ),
-
             const SizedBox(height: 40),
-
             // Status Message
             Text(
               _getStatusMessage(isKhmer),
