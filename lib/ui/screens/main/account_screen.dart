@@ -13,8 +13,6 @@ import 'package:smean_mobile_app/data/models/user_class.dart';
 import 'package:smean_mobile_app/ui/widgets/profile_image_widget.dart';
 import 'package:smean_mobile_app/ui/widgets/show_confirm_dialog.dart';
 import 'package:smean_mobile_app/ui/widgets/profile_picker_sheet.dart';
-import 'package:smean_mobile_app/ui/widgets/profile/profile_header_widget.dart';
-import 'package:smean_mobile_app/ui/widgets/profile/settings_section.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/text_input_dialog.dart';
 
 class AccountScreen extends StatefulWidget {
