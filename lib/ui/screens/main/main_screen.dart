@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
+import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/ui/screens/main/home_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/search_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/record_screen.dart';
@@ -10,6 +12,7 @@ import 'package:smean_mobile_app/ui/widgets/icons/itshover_home_icon.dart';
 import 'package:smean_mobile_app/ui/widgets/icons/itshover_magnifier_icon.dart';
 import 'package:smean_mobile_app/ui/widgets/icons/itshover_mic_icon.dart';
 import 'package:smean_mobile_app/ui/widgets/icons/itshover_upload_icon.dart';
+import 'package:smean_mobile_app/ui/widgets/navigation/custom_nav_bar.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -57,6 +60,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
     return Scaffold(
       body: IndexedStack(
         index: currentIndex,
@@ -68,44 +74,36 @@ class _MainScreenState extends State<MainScreen> {
           AccountScreen(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
+      bottomNavigationBar: CustomNavBar(
         currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-            if (index == 1) {
-              _searchKey.currentState?.reloadAudios();
-            }
-          });
-        },
+        onTap: _switchTab,
+        activeColor: AppColors.primary,
+        inactiveColor: Colors.grey,
         items: [
-          BottomNavigationBarItem(
+          NavItem(
             icon: const ItshoverHomeIcon(),
             activeIcon: const ItshoverHomeIcon(animate: true),
-            label: 'Home',
+            label: isKhmer ? 'ទំព័រដើម' : 'Home',
           ),
-          BottomNavigationBarItem(
+          NavItem(
             icon: const ItshoverMagnifierIcon(),
             activeIcon: const ItshoverMagnifierIcon(animate: true),
-            label: 'Search',
+            label: isKhmer ? 'ស្វែងរក' : 'Search',
           ),
-          BottomNavigationBarItem(
+          NavItem(
             icon: const ItshoverMicIcon(),
             activeIcon: const ItshoverMicIcon(animate: true),
-            label: 'Record',
+            label: isKhmer ? 'ថត' : 'Record',
           ),
-          BottomNavigationBarItem(
+          NavItem(
             icon: const ItshoverUploadIcon(),
             activeIcon: const ItshoverUploadIcon(animate: true),
-            label: 'Upload',
+            label: isKhmer ? 'ផ្ទុកឡើង' : 'Upload',
           ),
-          BottomNavigationBarItem(
+          NavItem(
             icon: const ItshoverAccountIcon(),
             activeIcon: const ItshoverAccountIcon(animate: true),
-            label: 'Account',
+            label: isKhmer ? 'គណនី' : 'Account',
           ),
         ],
       ),
