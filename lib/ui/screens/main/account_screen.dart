@@ -264,16 +264,33 @@ class _AccountScreenState extends State<AccountScreen> {
       backgroundColor: Color(0xFFF4F6F8),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
         centerTitle: true,
-        title: Text(
-          isKhmer ? 'ប្រវត្តិរូប' : 'Profile',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+        title: Row(
+          children: [
+            Image.asset('assets/images/Smean-Logo.png', height: 40),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isKhmer ? 'ប្រវត្តិរូប' : 'Profile',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                const Text(
+                  'SMEAN',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         actions: const [
           Padding(
@@ -287,7 +304,12 @@ class _AccountScreenState extends State<AccountScreen> {
           children: [
             // Profile Picture Section
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 32),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
               width: double.infinity,
               child: Column(
                 children: [
