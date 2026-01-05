@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/ui/screens/audio/audio_details_screen.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_bookmark_icon.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_mic_icon.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_upload_icon.dart';
 
 class RecentActivityCard extends StatelessWidget {
   final CardModel card;
@@ -86,7 +89,11 @@ class RecentActivityCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.bookmark, color: Colors.amber.shade700, size: 14),
+            ItshoverBookmarkIcon(
+              size: 14,
+              color: Colors.amber.shade700,
+              animate: true,
+            ),
             const SizedBox(width: 4),
             Text(
               isKhmer ? 'ចូលចិត្ត' : 'Saved',
@@ -125,10 +132,10 @@ class RecentActivityCard extends StatelessWidget {
             value: 'favorite',
             child: Row(
               children: [
-                Icon(
-                  card.isFavorite ? Icons.bookmark_remove : Icons.bookmark_add,
+                ItshoverBookmarkIcon(
+                  size: 18,
                   color: Colors.amber.shade700,
-                  size: 20,
+                  animate: card.isFavorite,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -170,12 +177,15 @@ class RecentActivityCard extends StatelessWidget {
     final createdAt = card.createdAt;
     final title = card.cardName;
     final duration = card.audioDuration ?? 0;
+    final source = card.audioSourceType?.toLowerCase() ?? 'recorded';
+    final isUploaded = source == 'uploaded' || source == 'upload';
 
     final formattedDate = isKhmer
         ? DateFormat('dd/MM/yyyy').format(createdAt)
         : DateFormat('MMM dd, yyyy').format(createdAt);
 
-    final hasMenu = onEdit != null || onDelete != null || onFavoriteToggle != null;
+    final hasMenu =
+        onEdit != null || onDelete != null || onFavoriteToggle != null;
 
     return Card(
       elevation: 0,
@@ -187,7 +197,9 @@ class RecentActivityCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: () async {
           final deleted = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(builder: (context) => AudioDetailsScreen(card: card)),
+            MaterialPageRoute(
+              builder: (context) => AudioDetailsScreen(card: card),
+            ),
           );
 
           if (deleted == true && onRefresh != null) onRefresh!();
@@ -204,7 +216,17 @@ class RecentActivityCard extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.mic, color: AppColors.primary, size: 26),
+                child: isUploaded
+                    ? ItshoverUploadIcon(
+                        size: 24,
+                        color: AppColors.primary,
+                        animate: true,
+                      )
+                    : ItshoverMicIcon(
+                        size: 24,
+                        color: AppColors.primary,
+                        animate: true,
+                      ),
               ),
               const SizedBox(width: 12),
 
@@ -234,18 +256,28 @@ class RecentActivityCard extends StatelessWidget {
                             formattedDate,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ),
                         SizedBox(width: 10),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.access_time, size: 13, color: Colors.grey[600]),
+                            Icon(
+                              Icons.access_time,
+                              size: 13,
+                              color: Colors.grey[600],
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               _formatDuration(duration),
-                              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                              ),
                             ),
                           ],
                         ),
@@ -267,7 +299,9 @@ class RecentActivityCard extends StatelessWidget {
                       child: Center(child: _buildMenu()),
                     )
                   else
-                    const SizedBox(height: 28), // keep alignment even without menu
+                    const SizedBox(
+                      height: 28,
+                    ), // keep alignment even without menu
                   const SizedBox(height: 6),
                 ],
               ),

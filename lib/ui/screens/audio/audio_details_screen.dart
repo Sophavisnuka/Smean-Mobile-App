@@ -145,7 +145,10 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
       appBar: AppBar(
         title: Text(
           isKhmer ? 'ព័ត៌មានលម្អិត' : 'Details',
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.additional),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.additional,
+          ),
         ),
         actions: const [
           Padding(
@@ -183,6 +186,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                         AudioInfoHeader(
                           title: widget.card.cardName,
                           formattedDate: formattedDate,
+                          sourceType: widget.card.audioSourceType,
                         ),
 
                         const SizedBox(height: 16),

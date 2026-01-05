@@ -24,7 +24,8 @@ class _CreateAudioScreenState extends State<CreateAudioScreen> {
       audioTitle: title,
       createdAt: DateTime.now(),
       filePath: '',
-      duration: 0
+      duration: 0,
+      sourceType: 'recorded',
     );
 
     Navigator.pop(context, record);

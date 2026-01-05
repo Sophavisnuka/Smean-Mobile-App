@@ -12,6 +12,7 @@ import 'package:smean_mobile_app/ui/widgets/profile_card.dart';
 import 'package:smean_mobile_app/ui/widgets/show_confirm_dialog.dart';
 import 'package:smean_mobile_app/ui/widgets/fan_menu.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/text_input_dialog.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_bookmark_icon.dart';
 import 'package:smean_mobile_app/ui/widgets/home/search_bar_widget.dart';
 import 'package:smean_mobile_app/ui/widgets/home/section_header_widget.dart';
 import 'package:smean_mobile_app/ui/widgets/home/empty_state_widget.dart';
@@ -221,13 +222,16 @@ class HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: AppColors.contrast,
-                borderRadius: BorderRadius.circular(16)
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Profile Card
-                  ProfileCard(isKhmer: isKhmer, onTap: () => widget.onSwitchTab(4)),
+                  ProfileCard(
+                    isKhmer: isKhmer,
+                    onTap: () => widget.onSwitchTab(4),
+                  ),
                   const SizedBox(height: 16),
                   // Stats Row
                   Row(
@@ -243,7 +247,11 @@ class HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildStatCard(
-                          icon: Icons.bookmark,
+                          iconWidget: ItshoverBookmarkIcon(
+                            color: Colors.amber,
+                            size: 22,
+                            animate: true,
+                          ),
                           title: isKhmer ? 'ចូលចិត្ត' : 'Saved',
                           value: '${_cards.where((c) => c.isFavorite).length}',
                           color: Colors.amber,
@@ -272,23 +280,42 @@ class HomeScreenState extends State<HomeScreen> {
               builder: (context, constraints) {
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   constraints: BoxConstraints(
                     minHeight: MediaQuery.of(context).size.height * 0.4,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.contrast,
-                    borderRadius: BorderRadius.circular(16)
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
                     children: [
                       // Section header with favorite toggle
                       SectionHeaderWidget(
                         title: _showOnlyFavorites
-                          ? (isKhmer ? 'សំឡេងដែលចូលចិត្ត' : 'Favorite Recordings')
-                          : (isKhmer ? 'កំណត់ត្រាថ្មីៗ' : 'Recent Recordings'),
-                        icon: Icons.bookmark,
-                        iconColor: _showOnlyFavorites ? Colors.amber : Color(0xFFF4F6F8),
+                            ? (isKhmer
+                                  ? 'សំឡេងដែលចូលចិត្ត'
+                                  : 'Favorite Recordings')
+                            : (isKhmer
+                                  ? 'កំណត់ត្រាថ្មីៗ'
+                                  : 'Recent Recordings'),
+                        trailingIcon: Padding(
+                          padding: const EdgeInsets.only(right: 2),
+                          child: IconTheme(
+                            data: IconThemeData(
+                              color: _showOnlyFavorites
+                                  ? Colors.amber
+                                  : Colors.grey.shade400,
+                              size: 22,
+                            ),
+                            child: ItshoverBookmarkIcon(
+                              animate: _showOnlyFavorites,
+                            ),
+                          ),
+                        ),
                         onIconPressed: () {
                           setState(() {
                             _showOnlyFavorites = !_showOnlyFavorites;
@@ -308,7 +335,8 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatCard({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String title,
     required String value,
     required Color color,
@@ -328,7 +356,7 @@ class HomeScreenState extends State<HomeScreen> {
               color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: iconWidget ?? Icon(icon, color: color, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -345,10 +373,7 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                 ),
               ],
             ),
@@ -397,6 +422,7 @@ class HomeScreenState extends State<HomeScreen> {
             onDelete: _deleteCard,
             onFavoriteToggle: _toggleFavorite,
             onRefresh: displayAudio,
+            searchQuery: searchText,
           ),
         );
       }).toList(),

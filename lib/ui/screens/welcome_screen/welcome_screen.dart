@@ -96,12 +96,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset('assets/images/SMEAN_logo.json'),
-            SizedBox(height: 15),
-            Lottie.asset('assets/images/SMEAN_text.json'),
-            SizedBox(height: 15),
-            Lottie.asset('assets/images/SMEAN_description.json'),
-            SizedBox(height: 15),
+            SizedBox(
+              width: 200,
+              height: 200,
+              child: Lottie.asset('assets/images/SMEAN_logo.json'),
+            ),
+            SizedBox(
+              width: 200,
+              height: 80,
+              child: Lottie.asset('assets/images/SMEAN_text.json'),
+            ),
+            SizedBox(height: 25),
+            SizedBox(
+              width: 250,
+              height: 60,
+              child: Lottie.asset('assets/images/SMEAN_description.json'),
+            ),
           ],
         ),
       ),

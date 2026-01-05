@@ -12,6 +12,7 @@ class AudioListWidget extends StatelessWidget {
     required this.onDelete,
     required this.onFavoriteToggle,
     required this.onRefresh,
+    this.searchQuery,
   });
 
   final List<CardModel> cards;
@@ -20,6 +21,7 @@ class AudioListWidget extends StatelessWidget {
   final Function(CardModel) onDelete;
   final Function(CardModel) onFavoriteToggle;
   final VoidCallback onRefresh;
+  final String? searchQuery;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +39,7 @@ class AudioListWidget extends StatelessWidget {
           onDelete: () => onDelete(card),
           onFavoriteToggle: () => onFavoriteToggle(card),
           onRefresh: onRefresh,
+          searchQuery: searchQuery,
         );
       },
     );

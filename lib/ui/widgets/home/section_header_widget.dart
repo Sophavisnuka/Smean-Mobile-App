@@ -5,13 +5,13 @@ class SectionHeaderWidget extends StatelessWidget {
   const SectionHeaderWidget({
     super.key,
     required this.title,
-    this.icon,
+    this.trailingIcon,
     this.iconColor,
     this.onIconPressed,
   });
 
   final String title;
-  final IconData? icon;
+  final Widget? trailingIcon;
   final Color? iconColor;
   final VoidCallback? onIconPressed;
 
@@ -28,9 +28,12 @@ class SectionHeaderWidget extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        if (icon != null && onIconPressed != null)
+        if (trailingIcon != null && onIconPressed != null)
           IconButton(
-            icon: Icon(icon, color: iconColor ?? Colors.grey, size: 28),
+            icon: IconTheme(
+              data: IconThemeData(color: iconColor ?? Colors.grey, size: 28),
+              child: trailingIcon!,
+            ),
             onPressed: onIconPressed,
           ),
       ],

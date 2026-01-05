@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_mic_icon.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_upload_icon.dart';
 
 /// A widget that displays audio information header with title, date, and icon
 class AudioInfoHeader extends StatelessWidget {
@@ -7,11 +9,13 @@ class AudioInfoHeader extends StatelessWidget {
     super.key,
     required this.title,
     required this.formattedDate,
+    this.sourceType,
     this.onEdit,
   });
 
   final String title;
   final String formattedDate;
+  final String? sourceType;
   final VoidCallback? onEdit;
 
   @override
@@ -26,7 +30,15 @@ class AudioInfoHeader extends StatelessWidget {
             color: AppColors.primary,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(Icons.mic, color: Colors.white, size: 32),
+          child: Center(
+            child: (sourceType?.toLowerCase() == 'uploaded')
+                ? ItshoverUploadIcon(
+                    color: Colors.white,
+                    size: 30,
+                    animate: true,
+                  )
+                : ItshoverMicIcon(color: Colors.white, size: 30, animate: true),
+          ),
         ),
         const SizedBox(height: 16),
         Row(

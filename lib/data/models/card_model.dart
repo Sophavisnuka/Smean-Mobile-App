@@ -30,7 +30,8 @@ class CardModel {
   String? get audioFilePath => audio?.filePath;
   int? get audioDuration => audio?.duration;
   Duration? get audioDurationObj => audio?.getDuration;
-  
+  String? get audioSourceType => audio?.sourceType;
+
   String? get transcriptId => transcript?.transcriptId;
   String? get transcriptionText => transcript?.text;
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_magnifier_icon.dart';
+
 /// Reusable search bar widget with optional search functionality or navigation
-class SearchBarWidget extends StatelessWidget {
+class SearchBarWidget extends StatefulWidget {
   const SearchBarWidget({
     super.key,
     this.onTap,
@@ -17,17 +19,50 @@ class SearchBarWidget extends StatelessWidget {
   final bool readOnly;
 
   @override
+  State<SearchBarWidget> createState() => _SearchBarWidgetState();
+}
+
+class _SearchBarWidgetState extends State<SearchBarWidget> {
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final shouldAnimate = _focusNode.hasFocus;
+
     return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      onTap: onTap,
-      readOnly: readOnly,
+      focusNode: _focusNode,
+      controller: widget.controller,
+      onChanged: widget.onChanged,
+      onTap: widget.onTap,
+      readOnly: widget.readOnly,
       style: const TextStyle(color: Colors.black87),
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: widget.hintText,
         hintStyle: const TextStyle(color: Colors.black54),
-        prefixIcon: const Icon(Icons.search, color: Colors.black54),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: ItshoverMagnifierIcon(
+            size: 20,
+            color: Colors.black54,
+            animate: shouldAnimate,
+          ),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,

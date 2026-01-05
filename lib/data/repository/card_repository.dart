@@ -31,7 +31,7 @@ class CardRepository {
   Future<CardModel?> getCardById(String cardId) async {
     final query = db.select(db.cards)..where((card) => card.id.equals(cardId));
     final card = await query.getSingleOrNull();
-    
+
     if (card == null) return null;
     return await _buildCardModel(card);
   }
@@ -51,28 +51,32 @@ class CardRepository {
     final now = createdAt ?? DateTime.now();
 
     // Insert card
-    await db.into(db.cards).insert(
-      CardsCompanion(
-        id: drift.Value(cardId),
-        userId: drift.Value(userId),
-        cardName: drift.Value(cardName),
-        isFavorite: drift.Value(isFavorite),
-        createdAt: drift.Value(now),
-        updatedAt: drift.Value(now),
-      ),
-    );
+    await db
+        .into(db.cards)
+        .insert(
+          CardsCompanion(
+            id: drift.Value(cardId),
+            userId: drift.Value(userId),
+            cardName: drift.Value(cardName),
+            isFavorite: drift.Value(isFavorite),
+            createdAt: drift.Value(now),
+            updatedAt: drift.Value(now),
+          ),
+        );
 
     // Insert audio
-    await db.into(db.audios).insert(
-      AudiosCompanion(
-        id: drift.Value(audioId),
-        cardId: drift.Value(cardId),
-        filePath: drift.Value(audioFilePath),
-        sourceType: drift.Value(sourceType),
-        duration: drift.Value(audioDuration),
-        createdAt: drift.Value(now),
-      ),
-    );
+    await db
+        .into(db.audios)
+        .insert(
+          AudiosCompanion(
+            id: drift.Value(audioId),
+            cardId: drift.Value(cardId),
+            filePath: drift.Value(audioFilePath),
+            sourceType: drift.Value(sourceType),
+            duration: drift.Value(audioDuration),
+            createdAt: drift.Value(now),
+          ),
+        );
 
     return cardId;
   }
@@ -155,6 +159,7 @@ class CardRepository {
             createdAt: audioData.createdAt,
             duration: audioData.duration,
             isFavorite: card.isFavorite,
+            sourceType: audioData.sourceType,
           )
         : null;
 
