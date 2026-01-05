@@ -5,6 +5,11 @@ import 'package:smean_mobile_app/ui/screens/main/search_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/record_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/upload_screen.dart';
 import 'package:smean_mobile_app/ui/screens/main/account_screen.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_account_icon.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_home_icon.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_magnifier_icon.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_mic_icon.dart';
+import 'package:smean_mobile_app/ui/widgets/icons/itshover_upload_icon.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -77,14 +82,31 @@ class _MainScreenState extends State<MainScreen> {
           });
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.mic), label: 'Record'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.upload_file),
+            icon: const ItshoverHomeIcon(),
+            activeIcon: const ItshoverHomeIcon(animate: true),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: const ItshoverMagnifierIcon(),
+            activeIcon: const ItshoverMagnifierIcon(animate: true),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: const ItshoverMicIcon(),
+            activeIcon: const ItshoverMicIcon(animate: true),
+            label: 'Record',
+          ),
+          BottomNavigationBarItem(
+            icon: const ItshoverUploadIcon(),
+            activeIcon: const ItshoverUploadIcon(animate: true),
             label: 'Upload',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Account'),
+          BottomNavigationBarItem(
+            icon: const ItshoverAccountIcon(),
+            activeIcon: const ItshoverAccountIcon(animate: true),
+            label: 'Account',
+          ),
         ],
       ),
     );
