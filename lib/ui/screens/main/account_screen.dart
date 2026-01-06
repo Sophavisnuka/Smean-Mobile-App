@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,6 +16,7 @@ import 'package:smean_mobile_app/ui/widgets/profile_image_widget.dart';
 import 'package:smean_mobile_app/ui/widgets/show_confirm_dialog.dart';
 import 'package:smean_mobile_app/ui/widgets/profile_picker_sheet.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/text_input_dialog.dart';
+import 'package:smean_mobile_app/ui/widgets/dialogs/image_review_dialog.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -94,10 +97,12 @@ class _AccountScreenState extends State<AccountScreen> {
     );
 
     if (confirmed == true) {
-      final (ok, message) = await _authService.deleteUserAccount(currentUser!.id);
-      
+      final (ok, message) = await _authService.deleteUserAccount(
+        currentUser!.id,
+      );
+
       if (!mounted) return;
-      
+
       if (ok) {
         CustomSnackBar.success(context, message);
         AppRoutes.navigateToLogin(context);
@@ -190,21 +195,83 @@ class _AccountScreenState extends State<AccountScreen> {
     );
     final isKhmer = languageProvider.currentLocale.languageCode == 'km';
 
-    final result = await _profileService.pickAndSaveImage(
+    // Step 1: Pick the image
+    final pickResult = await _profileService.pickImageForReview(source);
+
+    if (!mounted) return;
+
+    if (pickResult.cancelled) {
+      return; // User cancelled
+    }
+
+    if (!pickResult.success || pickResult.imagePath == null) {
+      CustomSnackBar.error(
+        context,
+        isKhmer ? 'បរាជ័យក្នុងការជ្រើសរើសរូបភាព' : 'Failed to pick image',
+      );
+      return;
+    }
+
+    // Step 2: Show image review dialog
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ImageReviewDialog(
+        imagePath: pickResult.imagePath!,
+        isKhmer: isKhmer,
+        onConfirm: (croppedPath) async {
+          Navigator.of(context).pop();
+          await _saveImage(croppedPath);
+        },
+        onCancel: () {
+          Navigator.of(context).pop();
+          // Clean up the temporary picked file if needed
+          try {
+            if (!pickResult.imagePath!.startsWith('data:image')) {
+              final tempFile = File(pickResult.imagePath!);
+              if (tempFile.existsSync()) {
+                // Note: Don't delete if it's from gallery, only if it's a temp file
+              }
+            }
+          } catch (_) {}
+        },
+      ),
+    );
+  }
+
+  Future<void> _saveImage(String imagePath) async {
+    if (currentUser == null) return;
+
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
+    // Save the reviewed/cropped image
+    final result = await _profileService.saveReviewedImage(
       currentUser!.id,
-      source,
+      imagePath,
     );
 
     if (!mounted) return;
 
     if (result.success) {
-      
+      // Clear image cache to force refresh
+      if (currentUser!.imagePath != null) {
+        final oldImagePath = currentUser!.imagePath!;
+        if (!oldImagePath.startsWith('data:image')) {
+          // Clear the cached image
+          final imageProvider = FileImage(File(oldImagePath));
+          imageProvider.evict();
+        }
+      }
+
       // Force immediate UI update
       setState(() {
-        currentUser = currentUser!.copyWith(imagePath: null);
+        currentUser = currentUser!.copyWith(imagePath: result.imagePath);
       });
-      
-      await _loadUser();
+
       if (!mounted) return;
 
       CustomSnackBar.success(
@@ -213,7 +280,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ? 'ធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូបបានជោគជ័យ'
             : 'Profile update successful',
       );
-    } else if (!result.cancelled) {
+    } else {
       CustomSnackBar.error(
         context,
         isKhmer
@@ -380,7 +447,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Name field
                   _buildInfoRow(
                     icon: Icons.person_outline,
@@ -388,7 +455,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     value: currentUser?.name ?? '',
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Email field
                   _buildInfoRow(
                     icon: Icons.email_outlined,
@@ -421,7 +488,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Edit Username
                   _buildActionTile(
                     icon: Icons.edit_outlined,
@@ -429,9 +496,9 @@ class _AccountScreenState extends State<AccountScreen> {
                     iconColor: AppColors.primary,
                     onTap: _editUsername,
                   ),
-                  
+
                   Divider(height: 1, color: Colors.grey[200]),
-                  
+
                   // Logout
                   _buildActionTile(
                     icon: Icons.logout,
@@ -439,9 +506,9 @@ class _AccountScreenState extends State<AccountScreen> {
                     iconColor: Colors.orange,
                     onTap: _handleLogout,
                   ),
-                  
+
                   Divider(height: 1, color: Colors.grey[200]),
-                  
+
                   // Delete Account
                   _buildActionTile(
                     icon: Icons.delete_outline,
@@ -482,10 +549,7 @@ class _AccountScreenState extends State<AccountScreen> {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
               const SizedBox(height: 4),
               Text(
