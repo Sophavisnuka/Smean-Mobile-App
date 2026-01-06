@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// A widget that displays an upload progress view
 class UploadProgressView extends StatelessWidget {
@@ -20,7 +19,6 @@ class UploadProgressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = GoogleFonts.manropeTextTheme(Theme.of(context).textTheme);
     final sheenValue = reduceMotion ? 0.0 : (sheenAnimation?.value ?? 0.0);
 
     return Center(
@@ -63,7 +61,8 @@ class UploadProgressView extends StatelessWidget {
             isKhmer
                 ? 'កំពុងដំណើរការឯកសាររបស់អ្នក...'
                 : 'Processing your file...',
-            style: GoogleFonts.spaceGrotesk(
+            style: const TextStyle(
+              fontFamily: 'GoogleSans',
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: Colors.black87,
@@ -76,12 +75,13 @@ class UploadProgressView extends StatelessWidget {
             isKhmer
                 ? 'សូមរង់ចាំបន្តិច អាចចំណាយពេលពីរបីវិនាទី'
                 : 'Hang tight—this only takes a few seconds.',
-            style: GoogleFonts.manrope(
+            style: const TextStyle(
+              fontFamily: 'GoogleSans',
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: Colors.black54,
               height: 1.4,
-            ).merge(textTheme.bodyMedium),
+            ),
             textAlign: TextAlign.center,
           ),
 

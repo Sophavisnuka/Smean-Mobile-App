@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:smean_mobile_app/ui/widgets/upload/file_format_info.dart';
 
 /// A widget that displays the upload area with drag-and-drop support
@@ -29,7 +28,6 @@ class UploadAreaWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pulseValue = reduceMotion ? 0.0 : (pulseAnimation?.value ?? 0.0);
-    final textTheme = GoogleFonts.manropeTextTheme(Theme.of(context).textTheme);
 
     return Center(
       child: Padding(
@@ -75,7 +73,8 @@ class UploadAreaWidget extends StatelessWidget {
 
             Text(
               isKhmer ? 'បញ្ចូលឯកសារសម្លេងរបស់អ្នក' : 'Upload your audio file',
-              style: GoogleFonts.spaceGrotesk(
+              style: const TextStyle(
+                fontFamily: 'GoogleSans',
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Colors.black87,
@@ -89,12 +88,13 @@ class UploadAreaWidget extends StatelessWidget {
                   ? 'ជ្រើស ឬអូសទម្លាក់ ហើយពិនិត្យមើលមុនរក្សាទុក'
                   : 'Choose or drag a file, preview it, then save.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.manrope(
+              style: const TextStyle(
+                fontFamily: 'GoogleSans',
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: Colors.black54,
                 height: 1.4,
-              ).merge(textTheme.bodyMedium),
+              ),
             ),
 
             if (isDragging) ...[
@@ -111,7 +111,8 @@ class UploadAreaWidget extends StatelessWidget {
                 ),
                 child: Text(
                   isKhmer ? 'ទម្លាក់ឯកសារនៅទីនេះ' : 'Drop file here',
-                  style: GoogleFonts.manrope(
+                  style: TextStyle(
+                    fontFamily: 'GoogleSans',
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: primaryColor,
@@ -134,7 +135,8 @@ class UploadAreaWidget extends StatelessWidget {
                 icon: const Icon(Icons.audio_file_rounded, size: 24),
                 label: Text(
                   isKhmer ? 'ជ្រើសរើសឯកសារ' : 'Select file',
-                  style: GoogleFonts.manrope(
+                  style: const TextStyle(
+                    fontFamily: 'GoogleSans',
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -167,7 +169,8 @@ class UploadAreaWidget extends StatelessWidget {
                 isKhmer
                     ? 'ឬអូសនិងទម្លាក់ឯកសារនៅទីនេះ'
                     : 'Or drag and drop a file here',
-                style: GoogleFonts.manrope(
+                style: const TextStyle(
+                  fontFamily: 'GoogleSans',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.black54,

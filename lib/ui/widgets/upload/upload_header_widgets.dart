@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// AppBar title for Upload Screen
 class UploadScreenHeaderTitle extends StatelessWidget {
@@ -9,7 +8,7 @@ class UploadScreenHeaderTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = GoogleFonts.manropeTextTheme(Theme.of(context).textTheme);
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       children: [
         Image.asset('assets/images/Smean-Logo.png', height: 40),
@@ -19,7 +18,8 @@ class UploadScreenHeaderTitle extends StatelessWidget {
           children: [
             Text(
               isKhmer ? 'ផ្ទុកឡើង' : 'Upload',
-              style: GoogleFonts.spaceGrotesk(
+              style: const TextStyle(
+                fontFamily: 'GoogleSans',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -48,7 +48,6 @@ class UploadCardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -56,7 +55,8 @@ class UploadCardHeader extends StatelessWidget {
           isKhmer
               ? 'ផ្ទុក ឈប់ ពិនិត្យ និងរក្សាទុក'
               : 'Upload, preview, and save with ease',
-          style: GoogleFonts.spaceGrotesk(
+          style: const TextStyle(
+            fontFamily: 'GoogleSans',
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: Colors.black87,
@@ -65,15 +65,16 @@ class UploadCardHeader extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           isKhmer
-              ? 'ផ្ទុកឡើងដោយមានការការពារ ពីលំហូររហ័សទៅការពិនិត្យ'
+              ? 'ផ្ទុកឡើងដោយមានការការពារ ពីលំហូររហា់សទៅការពិនិត្យ'
               : 'Glass card polish, intentional spacing, and soft teal glow.',
-          style: GoogleFonts.manrope(
+          style: const TextStyle(
+            fontFamily: 'GoogleSans',
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Colors.black54,
             height: 1.4,
             letterSpacing: 0.1,
-          ).merge(textTheme.bodyMedium),
+          ),
         ),
       ],
     );
