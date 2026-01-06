@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:smean_mobile_app/service/base_audio_service.dart';
+import 'package:http/http.dart' as http;
 
 class RecordAudioService implements BaseAudioService {
   final AudioRecorder _recorder = AudioRecorder();
@@ -104,7 +106,12 @@ class RecordAudioService implements BaseAudioService {
     final pathOrUrl = await _recorder.stop(); // mobile: path, web: blob url
 
     isRecording = false;
-    recordedFilePath = pathOrUrl;
+    if (kIsWeb && pathOrUrl != null && pathOrUrl.startsWith('blob:')) {
+      // Persist blob into a data URL so it survives page refreshes
+      recordedFilePath = await _persistWebRecording(pathOrUrl);
+    } else {
+      recordedFilePath = pathOrUrl;
+    }
 
     // Set total duration from recording elapsed time
     totalDuration = elapsed;
@@ -123,8 +130,18 @@ class RecordAudioService implements BaseAudioService {
     }
 
     if (kIsWeb) {
-      // On web, we can't easily get blob size - set to null
-      fileSize = null;
+      // Stored as a data URL; extract byte length
+      try {
+        final parts = recordedFilePath!.split(',');
+        if (parts.length == 2) {
+          final bytes = base64Decode(parts[1]);
+          fileSize = bytes.length;
+        } else {
+          fileSize = null;
+        }
+      } catch (e) {
+        fileSize = null;
+      }
     } else {
       try {
         final file = File(recordedFilePath!);
@@ -177,6 +194,22 @@ class RecordAudioService implements BaseAudioService {
   // Get file path
   @override
   String? get filePath => recordedFilePath;
+
+  // Convert the web blob URL to a data URL for persistence
+  Future<String?> _persistWebRecording(String blobUrl) async {
+    try {
+      final response = await http.get(Uri.parse(blobUrl));
+      if (response.statusCode == 200) {
+        final base64Data = base64Encode(response.bodyBytes);
+        // Default mime type for opus in webm container
+        return 'data:audio/webm;base64,$base64Data';
+      }
+    } catch (_) {
+      // Ignore and fall back
+    }
+    // Fall back to the volatile blob URL if conversion fails
+    return blobUrl;
+  }
 
   // Format file size for display
   @override

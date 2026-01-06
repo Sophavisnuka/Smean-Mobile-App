@@ -28,6 +28,7 @@ class AudioPreviewDialog extends StatefulWidget {
 class _AudioPreviewDialogState extends State<AudioPreviewDialog> {
   late final TextEditingController _titleController;
   bool _isTitleValid = false;
+  VoidCallback? _previousListener;
 
   @override
   void initState() {
@@ -41,7 +42,9 @@ class _AudioPreviewDialogState extends State<AudioPreviewDialog> {
       });
     });
 
+    _previousListener = widget.audioService.onStateChanged;
     widget.audioService.onStateChanged = () {
+      _previousListener?.call();
       if (mounted) {
         setState(() {});
       }
@@ -50,6 +53,7 @@ class _AudioPreviewDialogState extends State<AudioPreviewDialog> {
 
   @override
   void dispose() {
+    widget.audioService.onStateChanged = _previousListener;
     _titleController.dispose();
     super.dispose();
   }

@@ -285,9 +285,13 @@ class _UploadScreenState extends State<UploadScreen> {
       isKhmer ? 'កំពុងបង្កើតការចម្លងអត្ថបទ...' : 'Generating transcription...',
     );
 
+    final durationSeconds = _uploadService.totalDuration.inSeconds;
+    final safeDuration = durationSeconds <= 0 ? 1 : durationSeconds;
+
     await _transcriptService.generateMockTranscription(
       cardId: cardId,
       cardName: title,
+      durationSeconds: safeDuration,
     );
   }
 

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// A widget that displays an editable summary section
+/// A widget that displays a read-only summary section
 class SummarySection extends StatelessWidget {
   const SummarySection({
     super.key,
     required this.isKhmer,
-    required this.controller,
+    required this.summaryText,
     this.showMockBadge = false,
   });
 
   final bool isKhmer;
-  final TextEditingController controller;
+  final String summaryText;
   final bool showMockBadge;
 
   @override
@@ -64,14 +64,8 @@ class SummarySection extends StatelessWidget {
           const SizedBox(height: 12),
           Expanded(
             child: SingleChildScrollView(
-              child: TextField(
-                controller: controller,
-                maxLines: null,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
+              child: SelectableText(
+                summaryText,
                 style: const TextStyle(height: 1.4),
               ),
             ),

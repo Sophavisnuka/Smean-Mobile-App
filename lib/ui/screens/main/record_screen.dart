@@ -100,10 +100,16 @@ class _RecordScreenState extends State<RecordScreen> {
       isKhmer ? 'កំពុងបង្កើតអត្ថបទ...' : 'Generate Transcript...',
     );
 
+    final durationSeconds = _audioService.totalDuration.inSeconds > 0
+        ? _audioService.totalDuration.inSeconds
+        : _audioService.elapsed.inSeconds;
+    final safeDuration = durationSeconds <= 0 ? 1 : durationSeconds;
+
     // Generate mock transcription (2 second delay)
     await _transcriptService.generateMockTranscription(
       cardId: cardId,
       cardName: title,
+      durationSeconds: safeDuration,
     );
 
     if (!mounted) return;
@@ -227,34 +233,54 @@ class _RecordScreenState extends State<RecordScreen> {
           ),
         ],
       ),
-      body: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16)
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Timer Display
-            RecordingTimerWidget(duration: _getDisplayDuration()),
-            const SizedBox(height: 40),
-            // Recording Button
-            Center(
-              child: RecordingButtonWidget(
-                isRecording: _audioService.isRecording,
-                onTap: _handleRecordingToggle,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight - 48,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: 320,
+                    maxWidth: (constraints.maxWidth * 0.8).clamp(360.0, 840.0),
+                    minHeight: 260,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        RecordingTimerWidget(duration: _getDisplayDuration()),
+                        const SizedBox(height: 32),
+                        RecordingButtonWidget(
+                          isRecording: _audioService.isRecording,
+                          onTap: _handleRecordingToggle,
+                        ),
+                        const SizedBox(height: 32),
+                        Text(
+                          _getStatusMessage(isKhmer),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 40),
-            // Status Message
-            Text(
-              _getStatusMessage(isKhmer),
-              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
