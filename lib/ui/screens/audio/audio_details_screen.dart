@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
@@ -9,6 +10,7 @@ import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/data/repository/card_repository.dart';
 import 'package:smean_mobile_app/service/audio_playback_service.dart';
 import 'package:smean_mobile_app/service/mock_transcript_generator.dart';
+import 'package:smean_mobile_app/service/export_audio_service.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/audio_info_header.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/audio_player_card.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/summary_section.dart';
@@ -30,6 +32,7 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
   late AudioPlaybackService _audioService;
   late List<TranscriptSegment> _segments;
   int? _durationSeconds;
+  final ExportAudioService _exportService = ExportAudioService();
 
   @override
   void initState() {
@@ -149,6 +152,54 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
     }
   }
 
+  /// Handle audio export/share
+  Future<void> _handleExport() async {
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
+
+    final audioPath = widget.card.audioFilePath;
+    if (audioPath == null || audioPath.isEmpty) {
+      if (!mounted) return;
+      CustomSnackBar.error(
+        context,
+        isKhmer ? 'មិនមានឯកសារសម្លេង' : 'No audio file found',
+      );
+      return;
+    }
+
+    // Debug: Print file path
+    print('Attempting to share audio from path: $audioPath');
+
+    final success = await _exportService.shareAudio(
+      filePath: audioPath,
+      fileName: widget.card.cardName,
+      subject: isKhmer
+          ? 'សម្លេងថតចំណាំពី SMEAN'
+          : 'Audio recording from SMEAN',
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      CustomSnackBar.success(
+        context,
+        kIsWeb
+            ? (isKhmer ? 'បានទាញយក' : 'Downloaded successfully')
+            : (isKhmer ? 'បានចែករំលែក' : 'Shared successfully'),
+      );
+    } else {
+      CustomSnackBar.error(
+        context,
+        isKhmer 
+            ? 'មានបញ្ហាក្នុងការចែករំលែក'
+            : 'Failed to share. Try again',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
@@ -166,8 +217,15 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
             color: AppColors.additional,
           ),
         ),
-        actions: const [
-          Padding(
+        actions: [
+          IconButton(
+            icon: Icon(kIsWeb ? Icons.download_outlined : Icons.share_outlined),
+            onPressed: _handleExport,
+            tooltip: kIsWeb 
+                ? (isKhmer ? 'ទាញយក' : 'Download')
+                : (isKhmer ? 'ចែករំលែក' : 'Share'),
+          ),
+          const Padding(
             padding: EdgeInsets.only(right: 16.0),
             child: LanguageSwitcherButton(),
           ),

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
+import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
 import 'package:smean_mobile_app/data/models/card_model.dart';
+import 'package:smean_mobile_app/service/export_audio_service.dart';
 import 'package:smean_mobile_app/ui/screens/audio/audio_details_screen.dart';
 import 'package:smean_mobile_app/ui/widgets/icons/itshover_bookmark_icon.dart';
 import 'package:smean_mobile_app/ui/widgets/icons/itshover_mic_icon.dart';
@@ -9,13 +12,14 @@ import 'package:smean_mobile_app/ui/widgets/icons/itshover_upload_icon.dart';
 
 class RecentActivityCard extends StatelessWidget {
   final CardModel card;
-
   final bool isKhmer;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onRefresh;
   final String? searchQuery;
+
+  static final ExportAudioService _exportService = ExportAudioService();
 
   const RecentActivityCard({
     super.key,
@@ -109,9 +113,9 @@ class RecentActivityCard extends StatelessWidget {
     );
   }
 
-  PopupMenuButton<String> _buildMenu() {
+  PopupMenuButton<String> _buildMenu(BuildContext context) {
     return PopupMenuButton<String>(
-      // shrink the “big space” tap target
+      // shrink the "big space" tap target
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       iconSize: 20,
@@ -124,6 +128,8 @@ class RecentActivityCard extends StatelessWidget {
           onEdit!();
         } else if (value == 'delete' && onDelete != null) {
           onDelete!();
+        } else if (value == 'export') {
+          _performExport(context);
         }
       },
       itemBuilder: (context) => [
@@ -157,6 +163,22 @@ class RecentActivityCard extends StatelessWidget {
               ],
             ),
           ),
+        PopupMenuItem(
+          value: 'export',
+          child: Row(
+            children: [
+              Icon(
+                kIsWeb ? Icons.download_outlined : Icons.share_outlined,
+                color: Colors.blue,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(kIsWeb
+                  ? (isKhmer ? 'ទាញយក' : 'Download')
+                  : (isKhmer ? 'ចែករំលែក' : 'Share')),
+            ],
+          ),
+        ),
         if (onDelete != null)
           PopupMenuItem(
             value: 'delete',
@@ -170,6 +192,45 @@ class RecentActivityCard extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  /// Handle audio export with context
+  Future<void> _performExport(BuildContext context) async {
+    final audioPath = card.audioFilePath;
+    if (audioPath == null || audioPath.isEmpty) {
+      CustomSnackBar.error(
+        context,
+        isKhmer ? 'មិនមានឯកសារសម្លេង' : 'No audio file found',
+      );
+      return;
+    }
+
+    // Debug: Print file path
+    print('Attempting to share audio from path: $audioPath');
+
+    final success = await _exportService.shareAudio(
+      filePath: audioPath,
+      fileName: card.cardName,
+      subject: isKhmer
+          ? 'សម្លេងថតចំណាំពី SMEAN'
+          : 'Audio recording from SMEAN',
+    );
+
+    if (success) {
+      CustomSnackBar.success(
+        context,
+        kIsWeb
+            ? (isKhmer ? 'បានទាញយក' : 'Downloaded successfully')
+            : (isKhmer ? 'បានចែករំលែក' : 'Shared successfully'),
+      );
+    } else {
+      CustomSnackBar.error(
+        context,
+        isKhmer 
+            ? 'មានបញ្ហាក្នុងការចែករំលែក. សូមពិនិត្យ console.'
+            : 'Failed to share. Check console.',
+      );
+    }
   }
 
   @override
@@ -296,7 +357,7 @@ class RecentActivityCard extends StatelessWidget {
                     SizedBox(
                       height: 28,
                       width: 28,
-                      child: Center(child: _buildMenu()),
+                      child: Center(child: _buildMenu(context)),
                     )
                   else
                     const SizedBox(
