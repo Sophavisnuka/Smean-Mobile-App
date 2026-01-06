@@ -36,7 +36,7 @@ class CustomNavBar extends StatelessWidget {
     final theme = Theme.of(context);
     final effectiveActiveColor = activeColor ?? theme.colorScheme.primary;
     final effectiveInactiveColor =
-        inactiveColor ?? theme.colorScheme.onSurface.withOpacity(0.6);
+        inactiveColor ?? theme.colorScheme.onSurface.withValues(alpha: 0.6);
     final effectiveBackgroundColor =
         backgroundColor ?? theme.colorScheme.surface;
 
@@ -52,7 +52,7 @@ class CustomNavBar extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -112,8 +112,8 @@ class _NavBarItem extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          splashColor: activeColor.withOpacity(0.2),
-          highlightColor: activeColor.withOpacity(0.1),
+          splashColor: activeColor.withValues(alpha: 0.2),
+          highlightColor: activeColor.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Column(

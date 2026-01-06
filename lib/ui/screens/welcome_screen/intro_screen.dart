@@ -101,17 +101,15 @@ class _IntroScreenState extends State<IntroScreen>
   // Navigate to login and mark intro as seen
   void _completeIntro() async {
     await _markIntroAsSeen(context);
-    if (context.mounted) {
-      AppRoutes.navigateToLogin(context);
-    }
+    if (!mounted) return;
+    AppRoutes.navigateToLogin(context);
   }
 
   // Skip to end
   void _handleSkip() async {
     await _markIntroAsSeen(context);
-    if (context.mounted) {
-      AppRoutes.navigateToLogin(context);
-    }
+    if (!mounted) return;
+    AppRoutes.navigateToLogin(context);
   }
 
   @override
@@ -436,9 +434,8 @@ class _IntroScreenState extends State<IntroScreen>
               TextButton(
                 onPressed: () async {
                   await _markIntroAsSeen(context);
-                  if (context.mounted) {
-                    AppRoutes.navigateToRegister(context);
-                  }
+                  if (!mounted) return;
+                  AppRoutes.navigateToRegister(context);
                 },
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8),

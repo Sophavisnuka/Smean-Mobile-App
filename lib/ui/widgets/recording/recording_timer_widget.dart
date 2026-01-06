@@ -7,16 +7,27 @@ class RecordingTimerWidget extends StatelessWidget {
     super.key,
     required this.duration,
     this.fontSize = 48,
+    this.textStyle,
+    this.textAlign = TextAlign.center,
   });
 
   final Duration duration;
   final double fontSize;
+  final TextStyle? textStyle;
+  final TextAlign textAlign;
 
   @override
   Widget build(BuildContext context) {
     return Text(
       formatDuration(duration),
-      style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold),
+      textAlign: textAlign,
+      style:
+          textStyle ??
+          TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
     );
   }
 }
