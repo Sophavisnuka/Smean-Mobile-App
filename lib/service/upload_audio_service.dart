@@ -181,7 +181,11 @@ class UploadAudioService implements BaseAudioService {
       }
 
       // On some platforms, we need to start playing briefly to load metadata
+      // Mute the player to avoid unwanted sound
       try {
+        // Save current volume and mute
+        await _player.setVolume(0.0);
+
         if (kIsWeb) {
           await _player.play(UrlSource(uploadedFilePath!));
         } else {
@@ -194,7 +198,12 @@ class UploadAudioService implements BaseAudioService {
         // Stop immediately
         await _player.pause();
         await _player.seek(Duration.zero);
+
+        // Restore volume
+        await _player.setVolume(1.0);
       } catch (e) {
+        // Restore volume even if there's an error
+        await _player.setVolume(1.0);
         // Ignore playback errors during metadata loading
       }
 

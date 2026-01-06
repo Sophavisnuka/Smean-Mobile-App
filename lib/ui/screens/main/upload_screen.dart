@@ -1,7 +1,4 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/constants/app_constants.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
@@ -15,7 +12,9 @@ import 'package:smean_mobile_app/service/upload_audio_service.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/audio_preview_dialog.dart';
 import 'package:smean_mobile_app/ui/widgets/dialogs/loading_dialog.dart';
 import 'package:smean_mobile_app/ui/widgets/language_switcher_button.dart';
+import 'package:smean_mobile_app/ui/widgets/shared/glass_card.dart';
 import 'package:smean_mobile_app/ui/widgets/upload/upload_area_widget.dart';
+import 'package:smean_mobile_app/ui/widgets/upload/upload_header_widgets.dart';
 import 'package:smean_mobile_app/ui/widgets/upload/upload_progress_view.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
@@ -389,7 +388,7 @@ class _UploadScreenState extends State<UploadScreen>
         elevation: 0.5,
         centerTitle: false,
         titleSpacing: 16,
-        title: _HeaderTitle(isKhmer: isKhmer),
+        title: UploadScreenHeaderTitle(isKhmer: isKhmer),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 12),
@@ -420,12 +419,12 @@ class _UploadScreenState extends State<UploadScreen>
                       position: _cardOffset,
                       child: FadeTransition(
                         opacity: _cardOpacity,
-                        child: _GlassCard(
+                        child: GlassCard(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              _CardHeader(isKhmer: isKhmer),
+                              UploadCardHeader(isKhmer: isKhmer),
                               const SizedBox(height: 24),
                               DropTarget(
                                 onDragEntered: (details) {
@@ -511,121 +510,5 @@ class _UploadScreenState extends State<UploadScreen>
     if (!_sheenController.isAnimating) {
       _sheenController.repeat();
     }
-  }
-}
-
-class _HeaderTitle extends StatelessWidget {
-  const _HeaderTitle({required this.isKhmer});
-
-  final bool isKhmer;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = GoogleFonts.manropeTextTheme(Theme.of(context).textTheme);
-    return Row(
-      children: [
-        Image.asset('assets/images/Smean-Logo.png', height: 40),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isKhmer ? 'ផ្ទុកឡើង' : 'Upload',
-              style: GoogleFonts.spaceGrotesk(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            Text(
-              'SMEAN',
-              style: textTheme.labelLarge?.copyWith(
-                color: Colors.black54,
-                letterSpacing: 1.2,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _CardHeader extends StatelessWidget {
-  const _CardHeader({required this.isKhmer});
-
-  final bool isKhmer;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          isKhmer
-              ? 'ផ្ទុក ឈប់ ពិនិត្យ និងរក្សាទុក'
-              : 'Upload, preview, and save with ease',
-          style: GoogleFonts.spaceGrotesk(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          isKhmer
-              ? 'ផ្ទុកឡើងដោយមានការការពារ ពីលំហូររហ័សទៅការពិនិត្យ'
-              : 'Glass card polish, intentional spacing, and soft teal glow.',
-          style: GoogleFonts.manrope(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Colors.black54,
-            height: 1.4,
-            letterSpacing: 0.1,
-          ).merge(textTheme.bodyMedium),
-        ),
-      ],
-    );
-  }
-}
-
-class _GlassCard extends StatelessWidget {
-  const _GlassCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.92),
-                Colors.white.withOpacity(0.86),
-              ],
-            ),
-            border: Border.all(color: Colors.black12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: child,
-        ),
-      ),
-    );
   }
 }
