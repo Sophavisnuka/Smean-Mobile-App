@@ -94,8 +94,7 @@ class UploadAudioService implements BaseAudioService {
         if (bytes != null) {
           final extension = result.files.single.extension ?? 'webm';
           final mime = _mimeFromExtension(extension);
-          final dataUrl =
-              'data:$mime;base64,${base64Encode(bytes)}';
+          final dataUrl = 'data:$mime;base64,${base64Encode(bytes)}';
           uploadedFilePath = dataUrl;
           fileName = result.files.single.name;
           fileSize = bytes.length;
