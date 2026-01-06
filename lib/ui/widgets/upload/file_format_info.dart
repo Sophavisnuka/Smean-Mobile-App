@@ -9,20 +9,26 @@ class FileFormatInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const primary = Color(0xFF0DB2AC);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(12),
+        color: primary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: primary.withOpacity(0.5)),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: Colors.blue[700]),
+          Icon(Icons.info_outline, color: primary.withOpacity(0.9)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               FileValidationUtil.getSupportedFormatsDisplay(isKhmer),
-              style: TextStyle(color: Colors.blue[700], fontSize: 14),
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

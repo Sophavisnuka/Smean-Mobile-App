@@ -31,6 +31,10 @@ class RecordingButtonWidget extends StatelessWidget {
           width: radius * 2,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.black.withOpacity(0.24),
+              width: 1.4,
+            ),
             gradient: LinearGradient(
               colors: isRecording ? activeGradient : idleGradient,
               begin: Alignment.topLeft,

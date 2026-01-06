@@ -148,31 +148,42 @@ class _AudioPreviewDialogState extends State<AudioPreviewDialog> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.25),
+                    width: 1.2,
+                  ),
                 ),
                 child: Column(
                   children: [
-                    // Progress slider
-                    Slider(
-                      value: widget.audioService.playPosition.inSeconds
-                          .toDouble(),
-                      max:
-                          widget.audioService.totalDuration.inSeconds
-                                  .toDouble() >
-                              0
-                          ? widget.audioService.totalDuration.inSeconds
-                                .toDouble()
-                          : 1,
-                      onChanged: (value) async {
-                        await widget.audioService.seekTo(
-                          Duration(seconds: value.toInt()),
-                        );
-                      },
-                      activeColor: AppColors.primary,
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: AppColors.primary,
+                        inactiveTrackColor: AppColors.primary.withOpacity(0.18),
+                        thumbColor: AppColors.primary,
+                        overlayColor: AppColors.primary.withOpacity(0.20),
+                        trackHeight: 5,
+                      ),
+                      child: Slider(
+                        value: widget.audioService.playPosition.inSeconds
+                            .clamp(
+                              0,
+                              widget.audioService.totalDuration.inSeconds,
+                            )
+                            .toDouble(),
+                        max: widget.audioService.totalDuration.inSeconds > 0
+                            ? widget.audioService.totalDuration.inSeconds
+                                  .toDouble()
+                            : 1,
+                        onChanged: (value) async {
+                          await widget.audioService.seekTo(
+                            Duration(seconds: value.toInt()),
+                          );
+                        },
+                      ),
                     ),
 
-                    // Time display
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Row(
@@ -182,36 +193,49 @@ class _AudioPreviewDialogState extends State<AudioPreviewDialog> {
                             formatDuration(widget.audioService.playPosition),
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[600],
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
                             formatDuration(widget.audioService.totalDuration),
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[600],
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
 
-                    // Playback controls
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Play/Pause button
-                        IconButton(
-                          iconSize: 48,
-                          icon: Icon(
-                            widget.audioService.isPlaying
-                                ? Icons.pause_circle
-                                : Icons.play_circle,
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.12),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.18),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          onPressed: widget.audioService.togglePlayback,
-                          color: AppColors.primary,
+                          child: IconButton(
+                            iconSize: 48,
+                            icon: Icon(
+                              widget.audioService.isPlaying
+                                  ? Icons.pause_circle
+                                  : Icons.play_circle,
+                            ),
+                            color: AppColors.primary,
+                            onPressed: widget.audioService.togglePlayback,
+                          ),
                         ),
                       ],
                     ),

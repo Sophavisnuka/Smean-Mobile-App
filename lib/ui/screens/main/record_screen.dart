@@ -305,16 +305,16 @@ class _RecordScreenState extends State<RecordScreen>
                       ? [
                           BoxShadow(
                             color: primary.withOpacity(
-                              0.30 + (0.12 * _pulseAnimation.value),
+                              0.25 + (0.12 * _pulseAnimation.value),
                             ),
-                            blurRadius: 40 + (16 * _pulseAnimation.value),
-                            spreadRadius: 6 + (6 * _pulseAnimation.value),
+                            blurRadius: 32 + (10 * _pulseAnimation.value),
+                            spreadRadius: 4 + (4 * _pulseAnimation.value),
                           ),
                         ]
                       : [
                           BoxShadow(
-                            color: primary.withOpacity(0.30),
-                            blurRadius: 24,
+                            color: primary.withOpacity(0.22),
+                            blurRadius: 26,
                             spreadRadius: 2,
                           ),
                         ],
@@ -327,7 +327,7 @@ class _RecordScreenState extends State<RecordScreen>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: primary.withOpacity(0.14),
-                    border: Border.all(color: Colors.black, width: 1.4),
+                    border: Border.all(color: primary, width: 1.4),
                   ),
                 )
               else
@@ -337,7 +337,10 @@ class _RecordScreenState extends State<RecordScreen>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: secondary.withOpacity(0.10),
-                    border: Border.all(color: Colors.black, width: 1.4),
+                    border: Border.all(
+                      color: primary.withOpacity(0.85),
+                      width: 1.4,
+                    ),
                   ),
                 ),
               CustomPaint(
@@ -360,7 +363,7 @@ class _RecordScreenState extends State<RecordScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.black.withOpacity(0.25),
+                            color: primary.withOpacity(0.32),
                             width: 1.6,
                           ),
                         ),
@@ -378,7 +381,7 @@ class _RecordScreenState extends State<RecordScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.black.withOpacity(0.18),
+                            color: primary.withOpacity(0.26),
                             width: 1.4,
                           ),
                         ),
