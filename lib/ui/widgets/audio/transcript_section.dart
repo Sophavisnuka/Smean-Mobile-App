@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:smean_mobile_app/core/utils/formatting.dart';
 import 'package:smean_mobile_app/service/mock_transcript_generator.dart';
@@ -61,7 +59,7 @@ class TranscriptSection extends StatelessWidget {
           Expanded(
             child: ListView.separated(
               itemCount: segments.length,
-              separatorBuilder: (_, __) => const Divider(height: 16),
+              separatorBuilder: (context, index) => const Divider(height: 16),
               itemBuilder: (context, index) {
                 final segment = segments[index];
                 final start = formatDuration(
