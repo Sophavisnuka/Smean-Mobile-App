@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:smean_mobile_app/ui/widgets/recording/recording_timer_widget.dart';
 
 /// Custom painter for the animated ring around the timer
@@ -264,7 +263,8 @@ class RecordTimerSection extends StatelessWidget {
               // Timer display
               RecordingTimerWidget(
                 duration: duration,
-                textStyle: GoogleFonts.spaceGrotesk(
+                textStyle: const TextStyle(
+                  fontFamily: 'GoogleSans',
                   fontSize: 48,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,

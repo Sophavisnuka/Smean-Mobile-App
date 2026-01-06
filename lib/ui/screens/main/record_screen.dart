@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
 import 'package:smean_mobile_app/core/utils/custom_snack_bar.dart';
@@ -299,7 +298,8 @@ class _RecordScreenState extends State<RecordScreen>
         Text(
           _getStatusMessage(isKhmer),
           textAlign: TextAlign.center,
-          style: GoogleFonts.manrope(
+          style: const TextStyle(
+            fontFamily: 'GoogleSans',
             fontSize: 17,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
@@ -311,7 +311,8 @@ class _RecordScreenState extends State<RecordScreen>
               ? 'ចាប់ផ្តើម គេបញ្ឈប់ ត្រួតពិនិត្យ ហើយរក្សាទុក'
               : 'Tap to start, stop to preview, then save',
           textAlign: TextAlign.center,
-          style: GoogleFonts.manrope(
+          style: const TextStyle(
+            fontFamily: 'GoogleSans',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Colors.black54,

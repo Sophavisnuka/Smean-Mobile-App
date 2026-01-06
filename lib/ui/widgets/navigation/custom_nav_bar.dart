@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class NavItem {
   final Widget icon;
@@ -97,15 +96,8 @@ class _NavBarItem extends StatelessWidget {
     required this.onTap,
   });
 
-  bool _isKhmerText(String text) {
-    // Check if text contains Khmer Unicode characters (U+1780 to U+17FF)
-    return text.runes.any((rune) => rune >= 0x1780 && rune <= 0x17FF);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isKhmer = _isKhmerText(item.label);
-
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -136,21 +128,12 @@ class _NavBarItem extends StatelessWidget {
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOut,
-                  style: isKhmer
-                      ? GoogleFonts.kantumruyPro(
-                          fontSize: 12,
-                          fontWeight: isActive
-                              ? FontWeight.w800
-                              : FontWeight.w700,
-                          color: isActive ? activeColor : inactiveColor,
-                        )
-                      : TextStyle(
-                          fontSize: 12,
-                          fontWeight: isActive
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: isActive ? activeColor : inactiveColor,
-                        ),
+                  style: TextStyle(
+                    fontFamily: 'GoogleSans',
+                    fontSize: 12,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                    color: isActive ? activeColor : inactiveColor,
+                  ),
                   child: Text(
                     item.label,
                     maxLines: 1,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// AppBar title for Record Screen
 class RecordScreenHeaderTitle extends StatelessWidget {
@@ -9,7 +8,7 @@ class RecordScreenHeaderTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = GoogleFonts.manropeTextTheme(Theme.of(context).textTheme);
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       children: [
         Image.asset('assets/images/Smean-Logo.png', height: 40),
@@ -19,7 +18,8 @@ class RecordScreenHeaderTitle extends StatelessWidget {
           children: [
             Text(
               isKhmer ? 'កំណត់ត្រាសម្លេង' : 'Voice capture',
-              style: GoogleFonts.spaceGrotesk(
+              style: const TextStyle(
+                fontFamily: 'GoogleSans',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -56,7 +56,8 @@ class RecordCardHeader extends StatelessWidget {
           isKhmer
               ? 'ថត ឈប់ ពិនិត្យ និងរក្សាទុក'
               : 'Record, preview, and save with ease',
-          style: GoogleFonts.spaceGrotesk(
+          style: const TextStyle(
+            fontFamily: 'GoogleSans',
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: Colors.black87,

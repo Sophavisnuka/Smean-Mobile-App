@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smean_mobile_app/core/constants/app_colors.dart';
 import 'package:smean_mobile_app/core/providers/language_provider.dart';
@@ -22,7 +21,7 @@ void main() async {
           create: (context) => LanguageProvider(context.read<AppDatabase>()),
         ),
       ],
-      
+
       child: const SmeanApp(),
     ),
   );
@@ -34,11 +33,6 @@ class SmeanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final isKhmer = languageProvider.currentLocale.languageCode == 'km';
-    final currentTextTheme = isKhmer
-        ? GoogleFonts.kantumruyProTextTheme(Theme.of(context).textTheme)
-        : GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme);
-
     return MaterialApp(
       title: "SMEAN",
       debugShowCheckedModeBanner: false,
@@ -68,8 +62,8 @@ class SmeanApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
 
-        // 2. Set Default Font (Poppins for English, Kantumruy Pro for Khmer)
-        textTheme: currentTextTheme,
+        // 2. Set Default Font (Google Sans supports both English and Khmer)
+        fontFamily: 'GoogleSans',
       ),
     );
   }
