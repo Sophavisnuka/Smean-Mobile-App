@@ -39,6 +39,7 @@ dependencies:
   crypto: ^3.0.3
   # image picker
   image_picker: ^1.1.2
+  image_cropper: ^8.0.2
   # Drift - Cross-platform database (SQLite on mobile/desktop, IndexedDB on web)
   drift: ^2.20.3
   sqlite3_flutter_libs: ^0.5.24

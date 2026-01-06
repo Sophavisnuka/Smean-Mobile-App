@@ -17,11 +17,8 @@ class ProfileService {
     _authService = AuthService(_database);
   }
 
-  /// Pick an image from the specified source and update user profile
-  Future<ProfileImageResult> pickAndSaveImage(
-    String userId,
-    ImageSource source,
-  ) async {
+  /// Pick an image from the specified source (returns path for review)
+  Future<ProfileImageResult> pickImageForReview(ImageSource source) async {
     try {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(
@@ -35,7 +32,43 @@ class ProfileService {
         return ProfileImageResult(success: false, cancelled: true);
       }
 
-      final imageData = await _processImage(pickedFile, userId);
+      return ProfileImageResult(success: true, imagePath: pickedFile.path);
+    } catch (e) {
+      return ProfileImageResult(success: false, error: e.toString());
+    }
+  }
+
+  /// Save the reviewed/cropped image to profile
+  Future<ProfileImageResult> saveReviewedImage(
+    String userId,
+    String imagePath,
+  ) async {
+    try {
+      // Delete old profile images for this user (mobile only)
+      if (!kIsWeb) {
+        final appDir = await getApplicationDocumentsDirectory();
+        final profileDir = Directory('${appDir.path}/profile_pictures');
+        if (await profileDir.exists()) {
+          final files = await profileDir.list().toList();
+          for (var file in files) {
+            if (file is File && file.path.contains('profile_$userId')) {
+              try {
+                await file.delete();
+              } catch (_) {
+                // Ignore errors when deleting old files
+              }
+            }
+          }
+        }
+      }
+
+      final String imageData;
+      if (kIsWeb) {
+        imageData = await _processWebImageFromPath(imagePath);
+      } else {
+        imageData = await _processMobileImageFromPath(imagePath, userId);
+      }
+
       await _authService.repo.editProfile(userId, imageData);
 
       return ProfileImageResult(success: true, imagePath: imageData);
@@ -44,24 +77,11 @@ class ProfileService {
     }
   }
 
-  /// Process image based on platform (web vs mobile)
-  Future<String> _processImage(XFile pickedFile, String userId) async {
-    if (kIsWeb) {
-      return await _processWebImage(pickedFile);
-    } else {
-      return await _processMobileImage(pickedFile, userId);
-    }
-  }
-
-  /// Process image for web platform (convert to base64)
-  Future<String> _processWebImage(XFile pickedFile) async {
-    final bytes = await pickedFile.readAsBytes();
-    final extension = pickedFile.path.split('.').last;
-    return 'data:image/$extension;base64,${base64Encode(bytes)}';
-  }
-
-  /// Process image for mobile platform (save to app directory)
-  Future<String> _processMobileImage(XFile pickedFile, String userId) async {
+  /// Process image from existing file path
+  Future<String> _processMobileImageFromPath(
+    String imagePath,
+    String userId,
+  ) async {
     final appDir = await getApplicationDocumentsDirectory();
     final profileDir = Directory('${appDir.path}/profile_pictures');
 
@@ -69,11 +89,21 @@ class ProfileService {
       await profileDir.create(recursive: true);
     }
 
-    final fileName = 'profile_$userId${path.extension(pickedFile.path)}';
+    // Add timestamp to filename to ensure cache invalidation on update
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final fileName = 'profile_${userId}_$timestamp${path.extension(imagePath)}';
     final saveImage = File('${profileDir.path}/$fileName');
-    await File(pickedFile.path).copy(saveImage.path);
+    await File(imagePath).copy(saveImage.path);
 
     return saveImage.path;
+  }
+
+  /// Process image for web platform (convert to base64)
+  Future<String> _processWebImageFromPath(String imagePath) async {
+    final pickedFile = XFile(imagePath);
+    final bytes = await pickedFile.readAsBytes();
+    final extension = pickedFile.path.split('.').last;
+    return 'data:image/$extension;base64,${base64Encode(bytes)}';
   }
 
   /// Remove user profile picture
