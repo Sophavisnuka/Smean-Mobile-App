@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -7,7 +8,6 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:smean_mobile_app/core/constants/app_constants.dart';
 import 'package:smean_mobile_app/service/base_audio_service.dart';
-import 'web_utils_stub.dart' if (dart.library.html) 'web_utils_web.dart';
 
 class UploadAudioService implements BaseAudioService {
   final AudioPlayer _player = AudioPlayer();
@@ -89,13 +89,15 @@ class UploadAudioService implements BaseAudioService {
       final result = _pickedFileResult!;
 
       if (kIsWeb) {
-        // Web: create a blob URL from bytes
+        // Web: persist audio as data URL so it survives refresh
         final bytes = result.files.single.bytes;
         if (bytes != null) {
-          // Create blob URL from bytes
-          uploadedFilePath = createBlobUrl(bytes);
+          final extension = result.files.single.extension ?? 'webm';
+          final mime = _mimeFromExtension(extension);
+          final dataUrl = 'data:$mime;base64,${base64Encode(bytes)}';
+          uploadedFilePath = dataUrl;
           fileName = result.files.single.name;
-          fileSize = result.files.single.size;
+          fileSize = bytes.length;
         } else {
           return false;
         }
@@ -127,6 +129,32 @@ class UploadAudioService implements BaseAudioService {
     } catch (e) {
       _pickedFileResult = null;
       return false;
+    }
+  }
+
+  // Best-effort mime detection for web data URLs
+  String _mimeFromExtension(String extension) {
+    final ext = extension.toLowerCase();
+    switch (ext) {
+      case 'mp3':
+        return 'audio/mpeg';
+      case 'm4a':
+      case 'aac':
+        return 'audio/mp4';
+      case 'wav':
+        return 'audio/wav';
+      case 'ogg':
+      case 'oga':
+        return 'audio/ogg';
+      case 'webm':
+      case 'weba':
+        return 'audio/webm';
+      case 'flac':
+        return 'audio/flac';
+      case 'opus':
+        return 'audio/opus';
+      default:
+        return 'audio/$ext';
     }
   }
 

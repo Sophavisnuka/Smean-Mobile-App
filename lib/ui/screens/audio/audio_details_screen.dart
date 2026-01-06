@@ -8,6 +8,7 @@ import 'package:smean_mobile_app/data/models/card_model.dart';
 import 'package:smean_mobile_app/data/database/database.dart';
 import 'package:smean_mobile_app/data/repository/card_repository.dart';
 import 'package:smean_mobile_app/service/audio_playback_service.dart';
+import 'package:smean_mobile_app/service/mock_transcript_generator.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/audio_info_header.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/audio_player_card.dart';
 import 'package:smean_mobile_app/ui/widgets/audio/summary_section.dart';
@@ -27,27 +28,27 @@ class AudioDetailsScreen extends StatefulWidget {
 
 class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
   late AudioPlaybackService _audioService;
-  late TextEditingController _summaryController;
-  late TextEditingController _transcriptController;
+  late List<TranscriptSegment> _segments;
+  int? _durationSeconds;
 
   @override
   void initState() {
     super.initState();
     _audioService = AudioPlaybackService();
 
-    // Initialize controllers with data
-    _transcriptController = TextEditingController(
-      text: widget.card.transcriptionText ?? '',
-    );
-    _summaryController = TextEditingController(text: _getMockSummary());
+    _durationSeconds = widget.card.audioDuration;
+    _segments = _buildSegments(_durationSeconds ?? 60);
 
     // Load audio
     _loadAudio();
   }
 
-  /// Get mock summary text
-  String _getMockSummary() {
-    return 'This is a mock summary of the audio transcription. It provides a brief overview of the key points discussed in the recording. The summary captures the main ideas and essential information for quick reference.';
+  List<TranscriptSegment> _buildSegments(int durationSeconds) {
+    final safeDuration = durationSeconds <= 0 ? 1 : durationSeconds;
+    return MockTranscriptGenerator.generateSegments(
+      durationSeconds: safeDuration,
+      seed: widget.card.cardId.hashCode,
+    );
   }
 
   /// Load audio file
@@ -61,9 +62,24 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
   @override
   void dispose() {
     _audioService.dispose();
-    _summaryController.dispose();
-    _transcriptController.dispose();
     super.dispose();
+  }
+
+  void _handleAudioStateChanged() {
+    final newDuration = _audioService.duration.inSeconds;
+    if (newDuration > 0 && newDuration != _durationSeconds) {
+      setState(() {
+        _durationSeconds = newDuration;
+        _segments = _buildSegments(newDuration);
+      });
+    }
+  }
+
+  Future<void> _onSegmentTap(TranscriptSegment segment) async {
+    await _audioService.seek(Duration(seconds: segment.startSeconds));
+    if (!_audioService.isPlaying) {
+      await _audioService.togglePlayback();
+    }
   }
 
   /// Handle card deletion
@@ -192,7 +208,10 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
                         const SizedBox(height: 16),
 
                         // Audio Player
-                        AudioPlayerCard(audioService: _audioService),
+                        AudioPlayerCard(
+                          audioService: _audioService,
+                          onStateChanged: _handleAudioStateChanged,
+                        ),
                       ],
                     ),
                   ),
@@ -213,20 +232,23 @@ class _AudioDetailsScreenState extends State<AudioDetailsScreen> {
               const SizedBox(height: 24),
 
               // Summary Section
-              if (_summaryController.text.isNotEmpty) ...[
+              ...[
                 SummarySection(
                   isKhmer: isKhmer,
-                  controller: _summaryController,
+                  summaryText: MockTranscriptGenerator.summary(
+                    isKhmer: isKhmer,
+                  ),
                   showMockBadge: true,
                 ),
                 const SizedBox(height: 16),
               ],
 
               // Transcript Section
-              if (_transcriptController.text.isNotEmpty) ...[
+              if (_segments.isNotEmpty) ...[
                 TranscriptSection(
                   isKhmer: isKhmer,
-                  controller: _transcriptController,
+                  segments: _segments,
+                  onSegmentTap: _onSegmentTap,
                   showMockBadge: true,
                 ),
                 const SizedBox(height: 20),

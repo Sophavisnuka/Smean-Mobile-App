@@ -5,9 +5,14 @@ import 'package:smean_mobile_app/service/audio_playback_service.dart';
 
 /// A reusable widget for audio playback with controls
 class AudioPlayerCard extends StatefulWidget {
-  const AudioPlayerCard({super.key, required this.audioService});
+  const AudioPlayerCard({
+    super.key,
+    required this.audioService,
+    this.onStateChanged,
+  });
 
   final AudioPlaybackService audioService;
+  final VoidCallback? onStateChanged;
 
   @override
   State<AudioPlayerCard> createState() => _AudioPlayerCardState();
@@ -21,6 +26,7 @@ class _AudioPlayerCardState extends State<AudioPlayerCard> {
       if (mounted) {
         setState(() {});
       }
+      widget.onStateChanged?.call();
     };
   }
 
